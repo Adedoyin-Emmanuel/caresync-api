@@ -1,0 +1,6 @@
+{
+  "App": {
+    "request-limit": 100,
+    "max-file-size": 52428800
+  }
+}
