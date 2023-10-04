@@ -1,0 +1,5 @@
+{
+  "jwtPrivateKey": "JWT_PRIVATE_KEY",
+  "openAiPrivateKey": "OPEN_AI_API_KEY",
+  "mongodbURL": "MONGODB_URL"
+}
