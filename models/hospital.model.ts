@@ -20,7 +20,7 @@ const HospitalSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      min: 5,
+      min: 6,
       max: 30,
       required: true,
       select: false,
