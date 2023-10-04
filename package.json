@@ -38,9 +38,10 @@
   "dependencies": {
     "@types/cors": "^2.8.14",
     "@types/file-type": "^10.9.1",
+    "@types/jsonwebtoken": "^9.0.3",
     "@types/morgan": "^1.9.6",
     "@types/uuid": "^9.0.4",
-    "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "build": "^0.1.4",
     "config": "^3.3.9",
