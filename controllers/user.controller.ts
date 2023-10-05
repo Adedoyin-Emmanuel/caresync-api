@@ -134,3 +134,6 @@ class UserController {
     return response(res, 200, "User deleted successfully");
   }
 }
+
+
+export default UserController;
