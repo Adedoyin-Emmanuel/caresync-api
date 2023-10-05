@@ -71,14 +71,13 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-
 UserSchema.methods.generateAuthToken = function () {
   const payload = {
     _id: this._id,
     username: this.username,
     name: this.name,
   };
-  const JWT_SECRET: string = config.get("jwtPrivateKey");
+  const JWT_SECRET: any = process.env.JWT_PRIVATE_KEY;
   const tokenExpiration: string = config.get("tokenExpiration");
 
   const options: SignOptions = {
@@ -95,10 +94,10 @@ UserSchema.methods.generateRefreshToken = function () {
     username: this.username,
     name: this.name,
   };
-  const JWT_SECRET: string = config.get("jwtPrivateKey");
+  const JWT_SECRET: any = process.env.JWT_PRIVATE_KEY;
 
   const options: SignOptions = {
-    expiresIn: config.get("refreshTokenExpiration"),
+    expiresIn: config.get("App.refreshTokenExpiration"),
   };
 
   const token = jwt.sign(payload, JWT_SECRET, options);

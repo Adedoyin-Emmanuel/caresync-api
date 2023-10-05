@@ -1,5 +1,7 @@
 {
   "App": {
-    "request-limit": 100
-    }
+    "request-limit": 100,
+    "tokenExpiration": "1hr",
+    "refreshTokenExpiration": "7d"
+  }
 }

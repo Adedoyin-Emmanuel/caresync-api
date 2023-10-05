@@ -14,7 +14,6 @@ const app = express();
 
 //middlewares
 app.use(cors());
-app.set("trust proxy", true);
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));

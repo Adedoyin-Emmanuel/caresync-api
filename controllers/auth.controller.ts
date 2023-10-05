@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs";
-import config from "config";
 import { Request, Response } from "express";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
@@ -31,9 +30,10 @@ class AuthController {
 
     //generate access token
     const token = user.generateAuthToken();
+    await User.findOneAndUpdate({ email }, { token: token });
     res.header("x-auth-token", token);
 
-    return response(res, 200, "Login successful");
+    return response(res, 200, "Login successful", user);
   }
 
   static async generateRefreshToken(req: Request, res: Response) {
@@ -46,10 +46,10 @@ class AuthController {
       ?.header("Authorization")
       ?.replace("Bearer ", "");
 
-    const decoded: customJwtPayload | any = jwt.verify(
-      accessToken,
-      config.get("jwtPrivateKey")
-    );
+    if (!accessToken) return response(res, 401, "Access token not found");
+    const privateKey: any = process.env.JWT_PRIVATE_KEY;
+
+    const decoded: customJwtPayload | any = jwt.verify(accessToken, privateKey);
 
     if (!decoded || !decoded._id)
       return response(res, 401, "Invalid access token");
@@ -59,7 +59,7 @@ class AuthController {
 
     if (!user || !user.token)
       return response(res, 401, "You're not authorized!");
-   
+
     //create a new access token
     const newAccessToken = user.generateAuthToken();
     res.header("x-auth-token", newAccessToken);
@@ -67,6 +67,5 @@ class AuthController {
     return response(res, 200, "Access token generated successfully");
   }
 }
-
 
 export default AuthController;
