@@ -2,7 +2,7 @@ import config from "config";
 import jwt, { SignOptions } from "jsonwebtoken";
 import mongoose from "mongoose";
 
-interface IUser extends mongoose.Document {
+export interface IUser extends mongoose.Document {
   name: string;
   username: string;
   email: string;
@@ -47,6 +47,7 @@ const UserSchema = new mongoose.Schema(
     },
     token: {
       type: String,
+      select: false,
       required: false,
     },
     appointments: [
@@ -78,7 +79,7 @@ UserSchema.methods.generateAuthToken = function () {
     name: this.name,
   };
   const JWT_SECRET: any = process.env.JWT_PRIVATE_KEY;
-  const tokenExpiration: string = config.get("tokenExpiration");
+  const tokenExpiration: string = config.get("App.tokenExpiration");
 
   const options: SignOptions = {
     expiresIn: tokenExpiration,

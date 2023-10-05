@@ -26,7 +26,7 @@ class UserController {
       return response(res, 400, "Username already taken");
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(value.password, salt);
+    const password = await bcrypt.hash(value.password, salt);
     const { name, username, email } = value;
     const profilePicture = `https://api.dicebear.com/7.x/micah/svg?seed=${
       username || name
@@ -35,7 +35,7 @@ class UserController {
       name,
       username,
       email,
-      hashedPassword,
+      password,
       profilePicture,
     };
 
@@ -134,6 +134,5 @@ class UserController {
     return response(res, 200, "User deleted successfully");
   }
 }
-
 
 export default UserController;

@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import { response } from "./../utils";
 
 class AuthController {
@@ -18,13 +18,12 @@ class AuthController {
     const { email, password } = value;
 
     //find a user with the email
-    const user = await User.findOne({ email });
+    const user: IUser | any = await User.findOne({ email }).select("+password");
 
     /*The email doesn't exist but we confuse the user to think it is an invalid, 
     just in case of an hacker trying to exploit 😂*/
     if (!user) return response(res, 400, "Invalid credentials");
 
-    //check if the password is correct
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return response(res, 400, "Invalid credentials");
 

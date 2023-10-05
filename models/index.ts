@@ -4,7 +4,7 @@ import Message from "./message.model";
 import Review from "./review.model";
 import User from "./user.model";
 
-export default {
+export {
   Appointment,
   Hospital,
   Review,
