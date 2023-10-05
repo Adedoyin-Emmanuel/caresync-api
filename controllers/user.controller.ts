@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import User from "../models/user.model";
 import { response } from "./../utils";
+import * as _ from "lodash";
 
 class UserController {
   static async createUser(req: Request, res: Response) {
@@ -18,10 +19,13 @@ class UserController {
 
     //check if email has been taken by another user
     const { email: emailTaken, username: usernameTaken } = value;
-    const existingEmailUser = await User.findOne({ emailTaken });
+    const existingEmailUser = await User.findOne({ email: emailTaken });
+    console.log(existingEmailUser);
     if (existingEmailUser) return response(res, 400, "Email already taken");
 
-    const existingUsernameUser = await User.findOne({ usernameTaken });
+    const existingUsernameUser = await User.findOne({
+      username: usernameTaken,
+    });
     if (existingUsernameUser)
       return response(res, 400, "Username already taken");
 
@@ -40,8 +44,10 @@ class UserController {
     };
 
     const user = await User.create(valuesToStore);
+    const filteredUser = _.omit(user, ["password"]);
+  
 
-    return response(res, 201, "User created successfully", user);
+    return response(res, 201, "User created successfully", filteredUser);
   }
 
   static async getAllUsers(req: Request, res: Response) {

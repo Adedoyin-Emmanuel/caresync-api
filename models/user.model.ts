@@ -77,7 +77,7 @@ UserSchema.methods.generateAuthToken = function () {
     _id: this._id,
     username: this.username,
     name: this.name,
-    role:"user"
+    role: "user",
   };
   const JWT_SECRET: any = process.env.JWT_PRIVATE_KEY;
   const tokenExpiration: string = config.get("App.tokenExpiration");
@@ -91,12 +91,12 @@ UserSchema.methods.generateAuthToken = function () {
 };
 
 UserSchema.methods.generateRefreshToken = function () {
- const payload = {
-   _id: this._id,
-   username: this.username,
-   name: this.name,
-   role: "user",
- };
+  const payload = {
+    _id: this._id,
+    username: this.username,
+    name: this.name,
+    role: "user",
+  };
   const JWT_SECRET: any = process.env.JWT_PRIVATE_KEY;
 
   const options: SignOptions = {

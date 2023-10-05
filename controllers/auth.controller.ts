@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
 import User, { IUser } from "../models/user.model";
+import Hospital, {IHospital} from "../models/hospital.model";
 import { response } from "./../utils";
 
 class AuthController {
@@ -10,29 +11,49 @@ class AuthController {
     const requestSchema = Joi.object({
       email: Joi.string().required().email(),
       password: Joi.string().required(),
+      userType: Joi.string().required(),
     });
 
     const { error, value } = requestSchema.validate(req.body);
     if (error) return response(res, 200, error.details[0].message);
 
-    const { email, password } = value;
+    const { email, password, userType } = value;
+    if (userType !== "user" && userType !== "hospital") return response(res, 400, "Invalid user type");
 
-    //find a user with the email
-    const user: IUser | any = await User.findOne({ email }).select("+password");
+    if (userType == "user") {
+      //find a user with the email
+      const user: IUser | any = await User.findOne({ email }).select("+password");
 
-    /*The email doesn't exist but we confuse the user to think it is an invalid, 
-    just in case of an hacker trying to exploit 😂*/
-    if (!user) return response(res, 400, "Invalid credentials");
+      /*The email doesn't exist but we confuse the user to think it is an invalid, 
+      just in case of an hacker trying to exploit 😂*/
+      if (!user) return response(res, 400, "Invalid credentials");
 
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) return response(res, 400, "Invalid credentials");
+      const validPassword = await bcrypt.compare(password, user.password);
+      if (!validPassword) return response(res, 400, "Invalid credentials");
 
-    //generate access token
-    const token = user.generateAuthToken();
-    await User.findOneAndUpdate({ email }, { token: token });
-    res.header("x-auth-token", token);
+      //generate access token
+      const token = user.generateAuthToken();
+      await User.findOneAndUpdate({ email }, { token: token });
+      res.header("x-auth-token", token);
 
-    return response(res, 200, "Login successful", user);
+      return response(res, 200, "Login successful", user);
+    } else {
+      //find an hospital with the email
+      const hospital: IHospital | any = await Hospital.findOne({ email }).select(
+        "+password"
+      );
+
+      if (!hospital) return response(res, 400, "Invalid credentials");
+
+      const validPassword = await bcrypt.compare(password, hospital.password);
+      if (!validPassword) return response(res, 400, "Invalid credentials");
+
+      const token = hospital.generateAuthToken();
+      await Hospital.findOneAndUpdate({ email }, { token: token });
+      res.header("x-auth-token", token);
+
+      return response(res, 200, "Login successful", hospital);
+    }
   }
 
   static async generateRefreshToken(req: Request, res: Response) {

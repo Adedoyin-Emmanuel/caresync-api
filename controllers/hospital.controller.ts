@@ -121,7 +121,7 @@ class HospitalController {
     return response(res, 200, "Hospital updated successfully", updatedHospital);
   }
 
-  static async deleteUser(req: Request, res: Response) {
+  static async deleteHospital(req: Request, res: Response) {
     const requestSchema = Joi.object({
       id: Joi.string().required(),
     });

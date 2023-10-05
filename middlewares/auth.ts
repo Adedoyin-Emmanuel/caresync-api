@@ -4,19 +4,31 @@ import { response } from "../utils";
 
 const useAuth = (req: any, res: any, next: NextFunction) => {
   const token = req.headers["authorization"];
-  if (!token)
+  if (!token) {
     return response(res, 401, "You're not authorized to perform this action!");
+  }
+
   try {
     let bearer = token.split(" ")[1];
-    let jwtSecret: any = process.env.JWT_PRIVATE_KEY;
-    let decode = jwt.verify(bearer, jwtSecret);
+    const JWT_SECRET: any = process.env.JWT_PRIVATE_KEY;
+
+    if (!JWT_SECRET) {
+      throw new Error("JWT private key is missing.");
+    }
+
+    let decode = jwt.verify(bearer, JWT_SECRET);
+    console.log(decode);
     req.user = decode;
     res.user = decode;
-  } catch (error: unknown) {
-    console.log(error);
-    return response(res, 401, "You're not authorized to perform this action!");
+    next(); // Continue with the next middleware
+  } catch (error) {
+    console.error(error);
+    return response(
+      res,
+      401,
+      `You're not authorized to perform this action! ${error}`
+    );
   }
 };
 
 export default useAuth;
-  

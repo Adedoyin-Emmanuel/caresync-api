@@ -5,7 +5,7 @@ import express from "express";
 import "express-async-errors";
 import morgan from "morgan";
 import { useErrorHandler, useNotFound, useRateLimiter } from "./middlewares/";
-import { authRouter, userRouter } from "./routes";
+import { authRouter, userRouter, hospitalRouter } from "./routes";
 import { connectToDb } from "./utils";
 dotenv.config();
 
@@ -22,6 +22,7 @@ app.use(useRateLimiter);
 //default
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/hospital", hospitalRouter);
 
 app.use(useNotFound);
 app.use(useErrorHandler);
