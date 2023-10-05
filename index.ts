@@ -5,9 +5,9 @@ import express from "express";
 import "express-async-errors";
 import morgan from "morgan";
 import { errorHandler, notFound, rateLimiter } from "./middlewares/";
-dotenv.config();
+import { authRouter, userRouter } from "./routes";
 import { connectToDb } from "./utils";
-
+dotenv.config();
 
 const PORT = process.env.PORT || 2800;
 const app = express();
@@ -15,10 +15,14 @@ const app = express();
 //middlewares
 app.use(cors());
 app.set("trust proxy", true);
-app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.json({ limit: "100mb" }));
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(rateLimiter);
+
+//default
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
 
 app.use(notFound);
 app.use(errorHandler);
