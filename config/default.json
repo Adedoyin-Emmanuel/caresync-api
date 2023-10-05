@@ -3,7 +3,7 @@
     "request-limit": 100,
     "tokenExpiration": "1hr",
     "refreshTokenExpiration": "7d",
-    "login-request-limit": 5
-
+    "login-request-limit": 5,
+    "create-request-limit": 2
   }
 }

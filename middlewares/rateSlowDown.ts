@@ -1,6 +1,6 @@
-import slowDown from "express-slow-down";
+import SlowDown from "express-slow-down";
 
-export const loginSlowDown = slowDown({
+export const useLoginSlowDown = SlowDown({
   windowMs: 15 * 60 * 1000,
   delayAfter: 3,
   delayMs: 1000,

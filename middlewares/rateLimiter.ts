@@ -8,16 +8,23 @@ const defaultMessage = {
   data: {},
 };
 
-const rateLimiter = rateLimit({
+const useRateLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: config.get("App.request-limit"),
   message: defaultMessage,
 });
 
-export const loginRateLimiter = rateLimit({
+export const useLoginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: config.get("App.login-request-limit"),
   message: defaultMessage,
 });
 
-export default rateLimiter;
+export const useCreateUserLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: config.get("App.login-request-limit"),
+  message: defaultMessage,
+});
+
+
+export default useRateLimiter;
