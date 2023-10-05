@@ -19,3 +19,4 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
 };
 
 export default useAuth;
+  

@@ -16,6 +16,11 @@ const AppointmentModel = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    description: {
+      type: String,
+      required: true,
+      max: 5000
+    },
     messages: [
       {
         type: mongoose.Schema.Types.ObjectId,
