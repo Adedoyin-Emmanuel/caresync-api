@@ -1,6 +1,8 @@
+import bcrypt from "bcryptjs";
+import config from "config";
 import { Request, Response } from "express";
 import Joi from "joi";
-import * as bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 import User from "../models/user.model";
 import { response } from "./../utils";
 
@@ -27,9 +29,44 @@ class AuthController {
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return response(res, 400, "Invalid credentials");
 
-
     //generate access token
+    const token = user.generateAuthToken();
+    res.header("x-auth-token", token);
+
+    return response(res, 200, "Login successful");
   }
 
- // private async generate
+  static async generateRefreshToken(req: Request, res: Response) {
+    interface customJwtPayload {
+      _id: string;
+      username: string;
+      name: string;
+    }
+    const accessToken: any = req
+      ?.header("Authorization")
+      ?.replace("Bearer ", "");
+
+    const decoded: customJwtPayload | any = jwt.verify(
+      accessToken,
+      config.get("jwtPrivateKey")
+    );
+
+    if (!decoded || !decoded._id)
+      return response(res, 401, "Invalid access token");
+
+    //find a user by decoded id
+    const user = await User.findById(decoded._id);
+
+    if (!user || !user.token)
+      return response(res, 401, "You're not authorized!");
+   
+    //create a new access token
+    const newAccessToken = user.generateAuthToken();
+    res.header("x-auth-token", newAccessToken);
+
+    return response(res, 200, "Access token generated successfully");
+  }
 }
+
+
+export default AuthController;

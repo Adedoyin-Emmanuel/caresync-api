@@ -1,5 +1,7 @@
 {
   "jwtPrivateKey": "JWT_PRIVATE_KEY",
   "openAiPrivateKey": "OPEN_AI_API_KEY",
-  "mongodbURL": "MONGODB_URL"
+  "mongodbURL": "MONGODB_URL",
+  "tokenExpiration": "1hr",
+  "refreshTokenExpiration": "7d"
 }

@@ -1,4 +1,20 @@
+import config from "config";
+import jwt, { SignOptions } from "jsonwebtoken";
 import mongoose from "mongoose";
+
+interface IUser extends mongoose.Document {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+  profilePicture: string;
+  token?: string;
+  appointments: mongoose.Types.ObjectId[];
+  messages: mongoose.Types.ObjectId[];
+  reviews: mongoose.Types.ObjectId[];
+
+  generateAuthToken(): string;
+}
 
 const UserSchema = new mongoose.Schema(
   {
@@ -29,9 +45,9 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    token:{
+    token: {
       type: String,
-      required: false
+      required: false,
     },
     appointments: [
       {
@@ -55,6 +71,40 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-const User = mongoose.model("User", UserSchema);
+
+UserSchema.methods.generateAuthToken = function () {
+  const payload = {
+    _id: this._id,
+    username: this.username,
+    name: this.name,
+  };
+  const JWT_SECRET: string = config.get("jwtPrivateKey");
+  const tokenExpiration: string = config.get("tokenExpiration");
+
+  const options: SignOptions = {
+    expiresIn: tokenExpiration,
+  };
+
+  const token = jwt.sign(payload, JWT_SECRET, options);
+  return token;
+};
+
+UserSchema.methods.generateRefreshToken = function () {
+  const payload = {
+    _id: this._id,
+    username: this.username,
+    name: this.name,
+  };
+  const JWT_SECRET: string = config.get("jwtPrivateKey");
+
+  const options: SignOptions = {
+    expiresIn: config.get("refreshTokenExpiration"),
+  };
+
+  const token = jwt.sign(payload, JWT_SECRET, options);
+  return token;
+};
+
+const User = mongoose.model<IUser>("User", UserSchema);
 
 export default User;

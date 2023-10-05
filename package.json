@@ -36,6 +36,7 @@
     "node": "18.18.0"
   },
   "dependencies": {
+    "@types/bcryptjs": "^2.4.4",
     "@types/cors": "^2.8.14",
     "@types/file-type": "^10.9.1",
     "@types/jsonwebtoken": "^9.0.3",

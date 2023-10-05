@@ -1,4 +1,4 @@
-import * as bcrypt from "bcryptjs";
+import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
 import User from "../models/user.model";
@@ -40,6 +40,7 @@ class UserController {
     };
 
     const user = await User.create(valuesToStore);
+
     return response(res, 201, "User created successfully", user);
   }
 
@@ -91,7 +92,7 @@ class UserController {
       return response(res, 404, "User with given id not found");
 
     //check if email has been taken by another user
-    const { name, username, email } = requestBodyValue;
+    const { username, email } = requestBodyValue;
     if (email && email !== existingUser.email) {
       const existingEmailUser = await User.findOne({ email });
       if (existingEmailUser) return response(res, 400, "Email already taken");
@@ -128,7 +129,7 @@ class UserController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 200, error.details[0].message);
 
-    const deletedUser = await User.findByIdAndDelete(req.params);
+    await User.findByIdAndDelete(value.id);
 
     return response(res, 200, "User deleted successfully");
   }
