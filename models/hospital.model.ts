@@ -13,7 +13,9 @@ export interface IHospital extends mongoose.Document {
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
 
-  generateAuthToken(): string;
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
+
 }
 
 const HospitalSchema = new mongoose.Schema(
@@ -75,7 +77,7 @@ const HospitalSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-HospitalSchema.methods.generateAuthToken = function () {
+HospitalSchema.methods.generateAccessToken = function () {
   const payload = {
     _id: this._id,
     username: this.username,

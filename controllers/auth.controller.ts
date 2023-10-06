@@ -2,8 +2,9 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
 import jwt from "jsonwebtoken";
+import * as _ from "lodash";
+import Hospital, { IHospital } from "../models/hospital.model";
 import User, { IUser } from "../models/user.model";
-import Hospital, {IHospital} from "../models/hospital.model";
 import { response } from "./../utils";
 
 class AuthController {
@@ -21,7 +22,6 @@ class AuthController {
     if (userType !== "user" && userType !== "hospital") return response(res, 400, "Invalid user type");
 
     if (userType == "user") {
-      //find a user with the email
       const user: IUser | any = await User.findOne({ email }).select("+password");
 
       /*The email doesn't exist but we confuse the user to think it is an invalid, 
@@ -31,14 +31,17 @@ class AuthController {
       const validPassword = await bcrypt.compare(password, user.password);
       if (!validPassword) return response(res, 400, "Invalid credentials");
 
-      //generate access token
-      const token = user.generateAuthToken();
-      await User.findOneAndUpdate({ email }, { token: token });
-      res.header("x-auth-token", token);
+      const accessToken = user.generateAuthToken();
+      const refreshToken = user.generateRefreshToken();
 
-      return response(res, 200, "Login successful", user);
+      await User.findOneAndUpdate({ email }, { token: refreshToken });
+      res.header("x-auth-access-token", accessToken);
+      res.header("x-auth-refresh-token", refreshToken);
+      
+      const filteredUser = _.omit(user, ["password"]);
+
+      return response(res, 200, "Login successful", filteredUser);
     } else {
-      //find an hospital with the email
       const hospital: IHospital | any = await Hospital.findOne({ email }).select(
         "+password"
       );
@@ -48,11 +51,17 @@ class AuthController {
       const validPassword = await bcrypt.compare(password, hospital.password);
       if (!validPassword) return response(res, 400, "Invalid credentials");
 
-      const token = hospital.generateAuthToken();
-      await Hospital.findOneAndUpdate({ email }, { token: token });
-      res.header("x-auth-token", token);
+      const accessToken = hospital.generateAccessToken();
+      const refreshToken = hospital.generateRefreshToken();
 
-      return response(res, 200, "Login successful", hospital);
+
+      await Hospital.findOneAndUpdate({ email }, { token: refreshToken });
+      res.header("x-auth-access-token", accessToken);
+      res.header("x-auth-refresh-token", refreshToken);
+      
+      const filteredHospital = _.omit(hospital, ["password"]);
+      
+      return response(res, 200, "Login successful", filteredHospital);
     }
   }
 
