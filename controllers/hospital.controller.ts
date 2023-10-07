@@ -5,7 +5,6 @@ import Hospital from "../models/hospital.model";
 import { response } from "./../utils";
 
 class HospitalController {
-    
   static async createHospital(req: Request, res: Response) {
     const validationSchema = Joi.object({
       clinicName: Joi.string().required().max(50),
@@ -45,8 +44,9 @@ class HospitalController {
     return response(res, 201, "Hospital created successfully", hospital);
   }
 
-  static async getAllHospitals(req: Request, res: Response) {
+  static async getAllHospitals(req: Request | any, res: Response) {
     const allHospitals = await Hospital.find();
+    console.log(req.hospital);
 
     return response(res, 200, "Hospitals fetched successfully", allHospitals);
   }
@@ -60,7 +60,8 @@ class HospitalController {
     if (error) return response(res, 400, error.details[0].message);
 
     const hospital = await Hospital.findById(value.id);
-    if (!hospital) return response(res, 404, "Hospital with given id not found");
+    if (!hospital)
+      return response(res, 404, "Hospital with given id not found");
 
     return response(res, 200, "Hospital fetched successfully", hospital);
   }
