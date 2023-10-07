@@ -9,6 +9,8 @@ authRouter.post(
   [useLoginRateLimiter, useLoginSlowDown],
   AuthController.login
 );
+
+authRouter.post("/logout", AuthController.logout);
 authRouter.post("/refresh-token", AuthController.generateRefreshToken);
 
 export default authRouter;

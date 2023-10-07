@@ -7,6 +7,7 @@ import morgan from "morgan";
 import { useErrorHandler, useNotFound, useRateLimiter } from "./middlewares/";
 import { authRouter, userRouter, hospitalRouter } from "./routes";
 import { connectToDb } from "./utils";
+import cookieParser from "cookie-parser";
 dotenv.config();
 
 const PORT = process.env.PORT || 2800;
@@ -14,6 +15,7 @@ const app = express();
 
 //middlewares
 app.use(cors());
+app.use(cookieParser());
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));

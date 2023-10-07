@@ -13,7 +13,8 @@ export interface IUser extends mongoose.Document {
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
 
-  generateAuthToken(): string;
+  generateAccessToken(): string;
+  generateRefreshToken(): string;
 }
 
 const UserSchema = new mongoose.Schema(
@@ -72,7 +73,7 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-UserSchema.methods.generateAuthToken = function () {
+UserSchema.methods.generateAccessToken = function () {
   const payload = {
     _id: this._id,
     username: this.username,
