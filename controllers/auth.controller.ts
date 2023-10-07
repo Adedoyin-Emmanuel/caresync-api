@@ -136,7 +136,7 @@ class AuthController {
     );
     console.log(decoded);
     if (!decoded)
-      return response(res, 401, "You're not authorized");
+      return response(res, 401, "You're not authorized, Invalid token");
 
     const userRole = "user";
     const hospitalRole = "hospital";
@@ -145,10 +145,9 @@ class AuthController {
       //that's a user
 
       const user = await User.findById(decoded._id).select("+token");
-      console.log(user);
 
       if (!user || !user.token)
-        return response(res, 401, "You're not authorized!");
+        return response(res, 401, "You're not authorized, invalid token!");
 
       if (refreshToken === user.token) {
         const newAccessToken = user.generateAccessToken();
@@ -175,7 +174,7 @@ class AuthController {
         return response(
           res,
           401,
-          "You're not authorized, invalid hospital token!"
+          "You're not authorized, invalid token!"
         );
 
       if (refreshToken === hospital.token) {
@@ -193,7 +192,7 @@ class AuthController {
         return response(res, 200, "Access token generated successfully");
       } else {
         //nobody
-        return response(res, 401, "You're not authorized, no role found");
+        return response(res, 403, "You can't perform this action, no role found");
       }
     }
   }

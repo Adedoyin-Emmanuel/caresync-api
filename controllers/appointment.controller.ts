@@ -78,11 +78,11 @@ class AppointmentController {
 
   static async updateAppointment(req: Request, res: Response) {
     const requestSchema = Joi.object({
-      title: Joi.string().required().max(50),
-      description: Joi.string().required().max(1000),
+      title: Joi.string().max(50),
+      description: Joi.string().max(1000),
       status: Joi.string().required(),
-      startDate: Joi.date().iso().required(),
-      endDate: Joi.date().iso().required(),
+      startDate: Joi.date().iso(),
+      endDate: Joi.date().iso(),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =
