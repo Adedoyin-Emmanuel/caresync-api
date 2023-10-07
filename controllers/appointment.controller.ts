@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import Joi from "joi";
-import { response } from "./../utils";
+import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
-
+import { response } from "./../utils";
+import mongoose from "mongoose";
 class AppointmentController {
   static async createAppointment(req: Request, res: Response) {
     const validationSchema = Joi.object({
@@ -17,9 +18,38 @@ class AppointmentController {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return response(res, 400, error.details[0].message);
 
-    const appointment = await Appointment.create(value);
+    try {
+      const appointment:any = await Appointment.create(value);
 
-    return response(res, 201, "Appointment created successfully", appointment);
+      // Update User's Appointments
+      const updatedUser = await User.findByIdAndUpdate(
+        value.userId,
+        { $push: { appointments: appointment._id } },
+        { new: true }
+      );
+
+      // Update Hospital's Appointments
+      const updatedHospital = await Hospital.findByIdAndUpdate(
+        value.hospitalId,
+        { $push: { appointments: appointment._id } },
+        { new: true }
+      );
+
+   
+      return response(
+        res,
+        201,
+        "Appointment created successfully",
+        appointment
+      );
+    } catch (error) {
+      console.log(error);
+      return response(
+        res,
+        500,
+        `An error occurred while creating the appointment ${error}`
+      );
+    }
   }
 
   static async getAllAppointments(req: Request, res: Response) {
@@ -83,7 +113,12 @@ class AppointmentController {
       options
     );
 
-    return response(res, 200, "Appointment updated successfully", updatedAppointment);
+    return response(
+      res,
+      200,
+      "Appointment updated successfully",
+      updatedAppointment
+    );
   }
 
   static async deleteAppointment(req: Request, res: Response) {
