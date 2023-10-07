@@ -3,7 +3,6 @@ import Joi from "joi";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { response } from "./../utils";
-import mongoose from "mongoose";
 class AppointmentController {
   static async createAppointment(req: Request, res: Response) {
     const validationSchema = Joi.object({
@@ -19,23 +18,22 @@ class AppointmentController {
     if (error) return response(res, 400, error.details[0].message);
 
     try {
-      const appointment:any = await Appointment.create(value);
+      const appointment: any = await Appointment.create(value);
 
       // Update User's Appointments
-      const updatedUser = await User.findByIdAndUpdate(
+      await User.findByIdAndUpdate(
         value.userId,
         { $push: { appointments: appointment._id } },
         { new: true }
       );
 
       // Update Hospital's Appointments
-      const updatedHospital = await Hospital.findByIdAndUpdate(
+      await Hospital.findByIdAndUpdate(
         value.hospitalId,
         { $push: { appointments: appointment._id } },
         { new: true }
       );
 
-   
       return response(
         res,
         201,
@@ -82,6 +80,7 @@ class AppointmentController {
     const requestSchema = Joi.object({
       title: Joi.string().required().max(50),
       description: Joi.string().required().max(1000),
+      status: Joi.string().required(),
       startDate: Joi.date().iso().required(),
       endDate: Joi.date().iso().required(),
     });
@@ -102,8 +101,8 @@ class AppointmentController {
 
     //check if hospital with id exist
     const { id } = requestParamsValue;
-    const existingUser = await Appointment.findById(id);
-    if (!existingUser)
+    const existingAppointment = await Appointment.findById(id);
+    if (!existingAppointment)
       return response(res, 404, "Appointment with given id not found");
 
     const options = { new: true, runValidators: true };
@@ -129,11 +128,27 @@ class AppointmentController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 200, error.details[0].message);
 
+    //delete the appointment from the user and hospital document
     const deletedAppointment = await Appointment.findByIdAndDelete(value.id);
     if (!deletedAppointment)
       return response(res, 404, "Appointment with given id not found!");
+    try {
+      await User.findByIdAndUpdate(deletedAppointment.userId, {
+        $pull: { appointments: deletedAppointment._id },
+      });
 
-    return response(res, 200, "Hospital deleted successfully");
+      await Hospital.findByIdAndUpdate(deletedAppointment.hospitalId, {
+        $pull: { appointments: deletedAppointment._id },
+      });
+
+      return response(res, 200, "Hospital deleted successfully");
+    } catch (error) {
+      return response(
+        res,
+        400,
+        "An error occured while deleting the appointment!"
+      );
+    }
   }
 }
 
