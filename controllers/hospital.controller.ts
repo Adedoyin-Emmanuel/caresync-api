@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import Hospital from "../models/hospital.model";
 import { response } from "./../utils";
+import * as _ from "lodash";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -40,13 +41,21 @@ class HospitalController {
     };
 
     const hospital = await Hospital.create(valuesToStore);
+    const filteredHospital = _.pick(hospital, [
+      "clinicName",
+      "username",
+      "email",
+      "profilePicture",
+      "createdAt",
+      "updatedAt",
+    ]);
 
-    return response(res, 201, "Hospital created successfully", hospital);
+    return response(res, 201, "Hospital created successfully", filteredHospital);
   }
 
   static async getAllHospitals(req: Request | any, res: Response) {
     const allHospitals = await Hospital.find();
-    console.log(req.hospital);
+    //console.log(req.hospital);
 
     return response(res, 200, "Hospitals fetched successfully", allHospitals);
   }

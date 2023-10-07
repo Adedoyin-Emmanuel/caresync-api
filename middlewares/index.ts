@@ -3,6 +3,7 @@ import useErrorHandler from "./error";
 import useNotFound from "./notFound";
 import useRateLimiter, { useLoginRateLimiter, useCreateUserLimiter } from "./rateLimiter";
 import { useLoginSlowDown } from "./rateSlowDown";
+import useCheckRole from "./checkRole";
 
 export {
   useErrorHandler,
@@ -12,4 +13,5 @@ export {
   useRateLimiter,
   useCreateUserLimiter,
   useAuth,
+  useCheckRole
 };

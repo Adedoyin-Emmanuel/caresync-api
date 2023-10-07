@@ -22,7 +22,7 @@ class AppointmentController {
     return response(res, 201, "Appointment created successfully", appointment);
   }
 
-  static async getAllAppointments(req: Request | any, res: Response) {
+  static async getAllAppointments(req: Request, res: Response) {
     const allAppointments = await Appointment.find();
 
     return response(

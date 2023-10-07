@@ -43,7 +43,7 @@ class UserController {
     };
 
     const user = await User.create(valuesToStore);
-    console.log(user);
+   // console.log(user);
     const filteredUser = _.pick(user, [
       "name",
       "username",
@@ -58,7 +58,7 @@ class UserController {
   static async getAllUsers(req: Request | any, res: Response) {
     const allUsers = await User.find();
 
-    console.log(req.user);
+    //console.log(req.user);
 
     return response(res, 200, "Users fetched successfully", allUsers);
   }

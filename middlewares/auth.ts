@@ -4,10 +4,10 @@ import { response } from "../utils";
 
 const useAuth = (req: any, res: any, next: NextFunction) => {
   const tokenFromHeader = req.headers["authorization"];
-  const tokenFromCookie = req.cookies.accessToken; // Assuming you're using cookie-parser
+  const tokenFromCookie = req.cookies.accessToken; 
 
   if (!tokenFromHeader || !tokenFromCookie) {
-    return response(res, 401, "You're not authorized to perform this action!");
+    return response(res, 401, "You're not authorized to perform this action, not token provided !");
   }
 
   try {
@@ -42,7 +42,11 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
     }
   } catch (error) {
     console.error(error);
-    return response(res, 401, `You're not authorized to perform this action!`);
+    return response(
+      res,
+      401,
+      `You're not authorized to perform this action! ${error}`
+    );
   }
 };
 

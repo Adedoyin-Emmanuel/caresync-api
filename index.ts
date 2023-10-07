@@ -5,7 +5,7 @@ import express from "express";
 import "express-async-errors";
 import morgan from "morgan";
 import { useErrorHandler, useNotFound, useRateLimiter } from "./middlewares/";
-import { authRouter, userRouter, hospitalRouter } from "./routes";
+import { authRouter, userRouter, hospitalRouter, appointmentRouter } from "./routes";
 import { connectToDb } from "./utils";
 import cookieParser from "cookie-parser";
 dotenv.config();
@@ -21,10 +21,11 @@ app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(useRateLimiter);
 
-//default
+//endpoints
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/hospital", hospitalRouter);
+app.use("/api/appointment", appointmentRouter);
 
 app.use(useNotFound);
 app.use(useErrorHandler);
