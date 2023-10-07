@@ -24,11 +24,21 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
     let decodeCookie: any = jwt.verify(tokenFromCookie, JWT_SECRET);
 
     if (decodeHeader && decodeCookie && decodeHeader._id === decodeCookie._id) {
-      req.user = decodeHeader;
-      res.user = decodeHeader;
-      next();
+      const userRole = "user",
+        hospitalRole = "hospital";
+      if (decodeCookie.role === userRole) {
+        req.user = decodeHeader;
+        res.user = decodeHeader;
+        next();
+      } else if (decodeCookie.role === hospitalRole) {
+        req.hospital = decodeCookie;
+        res.hospital = decodeCookie;
+        next();
+      } else {
+        return response(res, 401, "Invalid auth token");
+      }
     } else {
-      return response(res, 401, "Invalid token.");
+      return response(res, 401, "Invalid auth token.");
     }
   } catch (error) {
     console.error(error);

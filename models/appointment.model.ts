@@ -2,31 +2,41 @@ import mongoose from "mongoose";
 
 const AppointmentModel = new mongoose.Schema(
   {
-    date: {
-      type: Date,
-      default: Date.now,
-    },
-    hospital: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Hospital",
-      required: true,
-    },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+    title: {
+      type: String,
       required: true,
     },
     description: {
       type: String,
       required: true,
-      max: 5000
+      max: 5000,
     },
-    messages: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
-      },
-    ],
+    hospitalId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Hospital",
+      required: true,
+    },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    status: {
+      type: String,
+      required: false,
+      default: "pending",
+    },
+
+    startDate: {
+      type: Date,
+      required: true,
+    },
+
+    endDate: {
+      type: Date,
+      required: true,
+    },
     reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
   },
   { timestamps: true, versionKey: false }
