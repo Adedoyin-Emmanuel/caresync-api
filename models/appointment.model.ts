@@ -5,11 +5,12 @@ const AppointmentModel = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      max: 50,
     },
     description: {
       type: String,
       required: true,
-      max: 5000,
+      max: 1000,
     },
     hospitalId: {
       type: mongoose.Schema.Types.ObjectId,

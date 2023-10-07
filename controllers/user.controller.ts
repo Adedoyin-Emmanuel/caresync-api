@@ -142,7 +142,9 @@ class UserController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 200, error.details[0].message);
 
-    await User.findByIdAndDelete(value.id);
+    const deletedUser = await User.findByIdAndDelete(value.id);
+    if (!deletedUser)
+      return response(res, 404, "User with given id not found!");
 
     return response(res, 200, "User deleted successfully");
   }

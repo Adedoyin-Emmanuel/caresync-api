@@ -130,7 +130,10 @@ class HospitalController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 200, error.details[0].message);
 
-    await Hospital.findByIdAndDelete(value.id);
+
+    const deletedHospital = await Hospital.findByIdAndDelete(value.id);
+    if (!deletedHospital)
+      return response(res, 404, "Hospital with given id not found!");
 
     return response(res, 200, "Hospital deleted successfully");
   }
