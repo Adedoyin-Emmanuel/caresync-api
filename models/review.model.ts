@@ -4,7 +4,7 @@ const ReviewSchema = new mongoose.Schema(
   {
     message: {
       type: String,
-      required: false,
+      required: true,
       max: 1000,
     },
     rating: {
@@ -13,7 +13,7 @@ const ReviewSchema = new mongoose.Schema(
       min: 1,
       max: 5,
     },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", },
     hospitalId: { type: mongoose.Schema.Types.ObjectId, ref: "Hospital" },
   },
   { timestamp: true, versionKey: false }
