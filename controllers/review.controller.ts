@@ -86,3 +86,6 @@ class ReviewController {
     return response(res, 200, "Review deleted successfully");
   }
 }
+
+
+export default ReviewController;
