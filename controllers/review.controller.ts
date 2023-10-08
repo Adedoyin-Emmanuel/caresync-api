@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Joi from "joi";
-import { Review } from "../models";
+import { Hospital, Review, User } from "../models";
 import { response } from "./../utils";
 
 class ReviewController {
@@ -15,9 +15,32 @@ class ReviewController {
     const { error, value } = requestSchema.validate(req.body);
     if (error) return response(res, 400, error.details[0].message);
 
-    const review = await Review.create(value);
+    try {
+      const review = await Review.create(value);
 
-    return response(res, 201, "Review created successfully", review);
+      // Update User's review
+      await User.findByIdAndUpdate(
+        value.userId,
+        { $push: { reviews: review._id } },
+        { new: true }
+      );
+
+      // Update Hospital's Review
+      await Hospital.findByIdAndUpdate(
+        value.hospitalId,
+        { $push: { reviews: review._id } },
+        { new: true }
+      );
+
+      return response(res, 201, "Review created successfully", review);
+    } catch (error) {
+      console.log(error);
+      return response(
+        res,
+        500,
+        `An error occurred while creating the review ${error}`
+      );
+    }
   }
 
   static async getAllReviews(req: Request, res: Response) {
@@ -83,9 +106,24 @@ class ReviewController {
     if (!deletedReview)
       return response(res, 404, "Review with given id not found!");
 
-    return response(res, 200, "Review deleted successfully");
+    try {
+      await User.findByIdAndUpdate(deletedReview.userId, {
+        $pull: { reviews: deletedReview._id },
+      });
+
+      await Hospital.findByIdAndUpdate(deletedReview.hospitalId, {
+        $pull: { reviews: deletedReview._id },
+      });
+
+      return response(res, 200, "Review deleted successfully");
+    } catch (error) {
+      return response(
+        res,
+        400,
+        "An error occured while deleting the review!"
+      );
+    }
   }
 }
-
 
 export default ReviewController;

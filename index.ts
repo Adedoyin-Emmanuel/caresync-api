@@ -1,13 +1,19 @@
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import "express-async-errors";
 import morgan from "morgan";
 import { useErrorHandler, useNotFound, useRateLimiter } from "./middlewares/";
-import { authRouter, userRouter, hospitalRouter, appointmentRouter } from "./routes";
+import {
+  appointmentRouter,
+  authRouter,
+  hospitalRouter,
+  reviewRouter,
+  userRouter,
+} from "./routes";
 import { connectToDb } from "./utils";
-import cookieParser from "cookie-parser";
 dotenv.config();
 
 const PORT = process.env.PORT || 2800;
@@ -26,6 +32,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/hospital", hospitalRouter);
 app.use("/api/appointment", appointmentRouter);
+app.use("/api/review", reviewRouter);
 
 app.use(useNotFound);
 app.use(useErrorHandler);
