@@ -118,7 +118,7 @@ class ReviewController {
       return response(res, 200, "Review deleted successfully");
     } catch (error) {
       return response(
-        res,
+        res,  
         400,
         "An error occured while deleting the review!"
       );
