@@ -243,7 +243,7 @@ class AuthController {
     return true;
   }
 
-  static async sendEmailToken(req: AuthRequest, res: Response) {
+  static async sendEmailToken(req: AuthRequest | any, res: Response) {
     const userType = req.userType;
     let defaultName = "Caresync";
 
@@ -382,9 +382,7 @@ class AuthController {
     }
   }
 
-  //add the verify user functionality
-
-  static async verify(req: AuthRequest, res: Response) {
+  static async verifyEmailToken(req: AuthRequest | any, res: Response) {
     const requestSchema = Joi.object({
       token: Joi.string().required(),
     });
@@ -440,8 +438,6 @@ class AuthController {
       return response(res, 404, "No valid user type, please login");
     }
   }
-
-  //add the verify hospital functionality
 
   static async logout(req: Request, res: Response) {
     res.clearCookie("accessToken");

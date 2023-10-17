@@ -15,9 +15,12 @@ authRouter.post("/refresh-token", AuthController.generateRefreshToken);
 
 
 //MISC
-authRouter.get("/verify-email",);
-authRouter.post("/verify-email",)
-authRouter.post("/reset-password",);
+authRouter.get("/verify-email", AuthController.sendEmailToken);
+authRouter.post("/verify-email", AuthController.verifyEmailToken);
+
+// authRouter.post("/forget-password",);
+// authRouter.post("/reset-password",);
+
 
 
 export default authRouter;
