@@ -267,7 +267,9 @@ class AuthController {
     const { email } = value;
 
     if (userType == "user") {
-      const user = await User.findOne({ email }).select("+verifyEmailToken");
+      const user = await User.findOne({ email }).select(
+        "+verifyEmailToken +verifyEmailTokenExpire"
+      );
       if (!user) return response(res, 404, "User with given email not found");
       const salt = await bcrypt.genSalt(10);
       const verifyEmailToken = await bcrypt.hash(user._id, salt);
@@ -322,7 +324,7 @@ class AuthController {
       return response(res, 200, "Email sent successfully", updatedUser);
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({ email }).select(
-        "+verifyEmailToken"
+        "+verifyEmailToken +verifyEmailTokenExpire"
       );
       if (!hospital)
         return response(res, 404, "Hospital with given email not found");
@@ -398,7 +400,7 @@ class AuthController {
       const user = await User.findOne({
         verifyEmailToken,
         verifyEmailTokenExpire: { $gt: Date.now() },
-      }).select("+verifyEmailToken");
+      }).select("+verifyEmailToken +verifyEmailTokenExpire");
 
       if (!user) return response(res, 400, "Invalid token");
 
@@ -418,7 +420,7 @@ class AuthController {
       const hospital = await Hospital.findOne({
         verifyEmailToken,
         verifyEmailTokenExpire: { $gt: Date.now() },
-      }).select("+verifyEmailToken");
+      }).select("+verifyEmailToken +verifyEmailTokenExpire");
 
       if (!hospital) return response(res, 400, "Invalid token");
 
@@ -434,6 +436,214 @@ class AuthController {
         "Hospital Account verified successfully",
         updatedHospital
       );
+    } else {
+      return response(res, 404, "No valid user type, please login");
+    }
+  }
+
+  static async forgotPassword(req: AuthRequest | any, res: Response) {
+    const userType = req.userType;
+    let defaultName = "Caresync";
+
+    switch (userType) {
+      case "user":
+        defaultName = req.user.name;
+        break;
+
+      case "hospital":
+        defaultName = req.hospital.clinicName;
+        break;
+    }
+
+    const requestSchema = Joi.object({
+      email: Joi.string().required().email(),
+      appBaseUrl: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.body);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { email, appBaseUrl } = value;
+
+    if (userType == "user") {
+      const user = await User.findOne({ email }).select(
+        "+resetPasswordToken +resetPasswordTokenExpires"
+      );
+      if (!user) {
+        return response(res, 400, "Invalid or expired token!");
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const resetToken = await bcrypt.hash(user._id, salt);
+      // 1 hour
+      const tokenExpireDate = new Date(Date.now() + 3600000);
+
+      user.resetPasswordToken = resetToken;
+      user.resetPasswordTokenExpires = tokenExpireDate;
+      const updatedUser = await user.save();
+
+      const data = `
+          <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Email Verification</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; padding: 20px;">
+      
+                <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
+      
+                    <h1 style="color: #007bff;">Email Verification</h1>
+      
+                    <p style="color: #333;">Dear ${req.user.name}</p>
+      
+                    <p style="color: #333;">Thank you for creating an account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
+      
+                    <a href=${appBaseUrl}?token=${resetToken} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
+      
+                    <span>Or copy this ${appBaseUrl}?token=${resetToken} and paste it to your browser </span>
+      
+                    <p style="color: #333;">If you didn't create an account with us, please ignore this email.</p>
+      
+                    <p style="color: #333;">Thank you for choosing Caresync.</p>
+      
+                </div>
+      
+            </body>
+            </html>
+      
+          `;
+
+      const result = await this.sendEmail(
+        "Verify Account",
+        data,
+        email,
+        defaultName
+      );
+      if (!result)
+        return response(res, 400, "An error occured while sending the email");
+
+      return response(
+        res,
+        200,
+        "Password reset link sent to mail successfully",
+        updatedUser
+      );
+    } else if (userType == "hospital") {
+      const hospital = await Hospital.findOne({ email }).select(
+        "+resetPasswordToken +resetPasswordTokenExpires"
+      );
+      if (!hospital) {
+        return response(res, 404, "Hospital not found!");
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const resetToken = await bcrypt.hash(hospital._id, salt);
+      // 1 day
+      const tokenExpireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      hospital.resetPasswordToken = resetToken;
+      hospital.resetPasswordTokenExpires = tokenExpireDate;
+      const updatedHospital = await hospital.save();
+
+      const data = `
+          <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Email Verification</title>
+            </head>
+            <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; padding: 20px;">
+      
+                <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
+      
+                    <h1 style="color: #007bff;">Email Verification</h1>
+      
+                    <p style="color: #333;">Dear ${req.hospital.name}</p>
+      
+                    <p style="color: #333;">Thank you for creating an account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
+      
+                    <a href=${appBaseUrl}?token=${resetToken} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
+      
+                    <span>Or copy this ${appBaseUrl}?token=${resetToken} and paste it to your browser </span>
+      
+                    <p style="color: #333;">If you didn't create an account with us, please ignore this email.</p>
+      
+                    <p style="color: #333;">Thank you for choosing Caresync.</p>
+      
+                </div>
+      
+            </body>
+            </html>
+      
+          `;
+
+      const result = await this.sendEmail(
+        "Verify Account",
+        data,
+        email,
+        defaultName
+      );
+      if (!result)
+        return response(res, 400, "An error occured while sending the email");
+
+      return response(
+        res,
+        200,
+        "Password reset link sent to mail successfully",
+        updatedHospital
+      );
+    }
+  }
+
+  static async resetPassword(req: AuthRequest | any, res: Response) {
+    const userType = req.userType;
+
+    const requestSchema = Joi.object({
+      token: Joi.string().required(),
+      password: Joi.string().required().min(6).max(30),
+    });
+
+    const { error, value } = requestSchema.validate(req.body);
+    if (error) return response(res, 400, error.details[0].message);
+    const { token, password } = value;
+    const resetPasswordToken = token;
+    if (userType == "user") {
+      const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordTokenExpires: { $gt: Date.now() },
+      }).select("+resetPasswordToken +resetPasswordTokenExpires");
+
+      if (!user) return response(res, 400, "Invalid or expired token!");
+      // Hash and set the new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      user.password = hashedPassword;
+      user.resetPasswordToken = undefined;
+      user.resetPasswordTokenExpires = undefined;
+
+      const updatedUser = await user.save();
+
+      return response(res, 200, "Password reset successful", updatedUser);
+    } else if (userType == "hospital") {
+      const hospital = await Hospital.findOne({
+        resetPasswordToken,
+        resetPasswordTokenExpires: { $gt: Date.now() },
+      }).select("+resetPasswordToken +resetPasswordTokenExpires");
+
+      if (!hospital) return response(res, 400, "Invalid or expired token!");
+      // Hash and set the new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      hospital.password = hashedPassword;
+      hospital.resetPasswordToken = undefined;
+      hospital.resetPasswordTokenExpires = undefined;
+
+      const updatedHospital = await hospital.save();
+
+      return response(res, 200, "Password reset successful", updatedHospital);
     } else {
       return response(res, 404, "No valid user type, please login");
     }
