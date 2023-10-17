@@ -320,20 +320,23 @@ class AuthController {
         return response(res, 400, "An error occured while sending the email");
 
       return response(res, 200, "Email sent successfully", updatedUser);
-    } else if(userType == "hospital") {
-        const hospital = await Hospital.findOne({ email }).select("+verifyEmailToken");
-        if (!hospital) return response(res, 404, "Hospital with given email not found");
-        const salt = await bcrypt.genSalt(10);
-        const verifyEmailToken = await bcrypt.hash(hospital._id, salt);
+    } else if (userType == "hospital") {
+      const hospital = await Hospital.findOne({ email }).select(
+        "+verifyEmailToken"
+      );
+      if (!hospital)
+        return response(res, 404, "Hospital with given email not found");
+      const salt = await bcrypt.genSalt(10);
+      const verifyEmailToken = await bcrypt.hash(hospital._id, salt);
 
-        //update the verifyEmailToken
-        hospital.verifyEmailToken = verifyEmailToken;
-        hospital.verifyEmailTokenExpire = new Date(
-          Date.now() + 24 * 60 * 60 * 1000
-        );
-        const updatedHospital = await hospital.save();
+      //update the verifyEmailToken
+      hospital.verifyEmailToken = verifyEmailToken;
+      hospital.verifyEmailTokenExpire = new Date(
+        Date.now() + 24 * 60 * 60 * 1000
+      );
+      const updatedHospital = await hospital.save();
 
-        const data = `
+      const data = `
           <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -366,22 +369,77 @@ class AuthController {
       
           `;
 
-        const result = await this.sendEmail(
-          "Verify Account",
-          data,
-          email,
-          defaultName
-        );
-        if (!result)
-          return response(res, 400, "An error occured while sending the email");
+      const result = await this.sendEmail(
+        "Verify Account",
+        data,
+        email,
+        defaultName
+      );
+      if (!result)
+        return response(res, 400, "An error occured while sending the email");
 
-        return response(res, 200, "Email sent successfully", updatedHospital);
+      return response(res, 200, "Email sent successfully", updatedHospital);
     }
   }
 
   //add the verify user functionality
 
-  static async verify(req: Request, res: Response) {}
+  static async verify(req: AuthRequest, res: Response) {
+    const requestSchema = Joi.object({
+      token: Joi.string().required(),
+    });
+
+    const userType = req.userType;
+    const { error, value } = requestSchema.validate(req.query);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { token } = value;
+
+    const verifyEmailToken = token;
+    if (userType == "user") {
+      const user = await User.findOne({
+        verifyEmailToken,
+        verifyEmailTokenExpire: { $gt: Date.now() },
+      }).select("+verifyEmailToken");
+
+      if (!user) return response(res, 400, "Invalid token");
+
+      user.verifyEmailToken = undefined;
+      user.verifyEmailTokenExpire = new Date(Date.now());
+      user.isVerified = true;
+
+      const updatedUser = await user.save();
+
+      return response(
+        res,
+        200,
+        "User Account verified successfully",
+        updatedUser
+      );
+    } else if (userType == "hospital") {
+      const hospital = await Hospital.findOne({
+        verifyEmailToken,
+        verifyEmailTokenExpire: { $gt: Date.now() },
+      }).select("+verifyEmailToken");
+
+      if (!hospital) return response(res, 400, "Invalid token");
+
+      hospital.verifyEmailToken = undefined;
+      hospital.verifyEmailTokenExpire = new Date(Date.now());
+      hospital.isVerified = true;
+
+      const updatedHospital = await hospital.save();
+
+      return response(
+        res,
+        200,
+        "Hospital Account verified successfully",
+        updatedHospital
+      );
+    } else {
+      return response(res, 404, "No valid user type, please login");
+    }
+  }
 
   //add the verify hospital functionality
 
