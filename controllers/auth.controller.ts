@@ -1,4 +1,3 @@
-import * as brevo from "@getbrevo/brevo";
 import bcrypt from "bcryptjs";
 import config from "config";
 import { Request, Response } from "express";
@@ -8,6 +7,7 @@ import * as _ from "lodash";
 import Hospital, { IHospital } from "../models/hospital.model";
 import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
+import transporter from "../utils/mail.config";
 import { response } from "./../utils";
 
 class AuthController {
@@ -202,43 +202,22 @@ class AuthController {
   static async sendEmail(
     subject: string,
     data: string,
-    toEmail: string,
-    toName: string
+    toEmail: string
   ): Promise<boolean> {
-    const defaultClient = brevo.ApiClient.instance;
-    let apiKey = defaultClient.authentications["api-key"];
-    apiKey.apiKey = `xkeysib-${process.env.BREVO_API_KEY}`;
-
-    let apiInstance = new brevo.TransactionalEmailsApi();
-    let sendSmtpEmail = new brevo.SendSmtpEmail();
-
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = data;
-    sendSmtpEmail.sender = {
-      name: "Adedoyin Emmanuel",
-      email: "adedoyine535@gmail.com",
-    };
-    sendSmtpEmail.to = [{ email: toEmail, name: toName }];
-    sendSmtpEmail.replyTo = {
-      email: "adedoyine535@gmail.com",
-      name: "Adedoyin Emmanuel",
-    };
-    sendSmtpEmail.params = {
+    const mailOptions = {
+      from: process.env.MAIL_FROM_ADDRESS,
+      to: toEmail,
       subject: subject,
+      html: data,
     };
-
-    apiInstance.sendTransacEmail(sendSmtpEmail).then(
-      function (data) {
-        console.log(
-          "API called successfully. Returned data: " + JSON.stringify(data)
-        );
-        return true;
-      },
-      function (error) {
-        console.error(error);
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) {
+        console.error("Error sending verification email:", error);
         return false;
+      } else {
+        return true;
       }
-    );
+    });
 
     return true;
   }
@@ -280,15 +259,6 @@ class AuthController {
       const updatedUser = await user.save();
 
       const data = `
-          <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Email Verification</title>
-            </head>
-            <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; padding: 20px;">
-      
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
                     <h1 style="color: #007bff;">Email Verification</h1>
@@ -307,17 +277,9 @@ class AuthController {
       
                 </div>
       
-            </body>
-            </html>
-      
           `;
 
-      const result = await this.sendEmail(
-        "Verify Account",
-        data,
-        email,
-        defaultName
-      );
+      const result = await this.sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -339,15 +301,6 @@ class AuthController {
       const updatedHospital = await hospital.save();
 
       const data = `
-          <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Email Verification</title>
-            </head>
-            <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; padding: 20px;">
-      
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
                     <h1 style="color: #007bff;">Email Verification</h1>
@@ -366,17 +319,9 @@ class AuthController {
       
                 </div>
       
-            </body>
-            </html>
-      
           `;
 
-      const result = await this.sendEmail(
-        "Verify Account",
-        data,
-        email,
-        defaultName
-      );
+      const result = await this.sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -483,15 +428,6 @@ class AuthController {
       const updatedUser = await user.save();
 
       const data = `
-          <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Email Verification</title>
-            </head>
-            <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; padding: 20px;">
-      
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
                     <h1 style="color: #007bff;">Email Verification</h1>
@@ -509,18 +445,11 @@ class AuthController {
                     <p style="color: #333;">Thank you for choosing Caresync.</p>
       
                 </div>
-      
-            </body>
-            </html>
+
       
           `;
 
-      const result = await this.sendEmail(
-        "Verify Account",
-        data,
-        email,
-        defaultName
-      );
+      const result = await this.sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -548,15 +477,6 @@ class AuthController {
       const updatedHospital = await hospital.save();
 
       const data = `
-          <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Email Verification</title>
-            </head>
-            <body style="font-family: Arial, sans-serif; text-align: center; background-color: #f5f5f5; padding: 20px;">
-      
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
                     <h1 style="color: #007bff;">Email Verification</h1>
@@ -575,17 +495,9 @@ class AuthController {
       
                 </div>
       
-            </body>
-            </html>
-      
           `;
 
-      const result = await this.sendEmail(
-        "Verify Account",
-        data,
-        email,
-        defaultName
-      );
+      const result = await this.sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
