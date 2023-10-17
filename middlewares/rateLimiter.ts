@@ -26,5 +26,10 @@ export const useCreateUserLimiter = rateLimit({
   message: defaultMessage,
 });
 
+export const useVerifyLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: config.get("App.verify-user-request-limit"),
+  message: defaultMessage,
+});
 
 export default useRateLimiter;
