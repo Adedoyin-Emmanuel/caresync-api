@@ -58,7 +58,6 @@ class UserController {
   static async getAllUsers(req: Request | any, res: Response) {
     const allUsers = await User.find();
 
-    //console.log(req.user);
 
     return response(res, 200, "Users fetched successfully", allUsers);
   }

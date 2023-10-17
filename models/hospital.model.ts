@@ -45,16 +45,42 @@ const HospitalSchema = new mongoose.Schema(
       select: false,
     },
 
-    bio: {
-      type: String,
-      required: false,
-      max: 500,
-    },
-
     profilePicture: {
       type: String,
       required: true,
     },
+
+    bio: {
+      type: String,
+      required: false,
+      default: "Bridging health with technology",
+      max: 500,
+    },
+    
+    token: {
+      type: String,
+      select: false,
+      required: false,
+    },
+
+    isVerified: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+
+    verifyEmailToken: {
+      type: String,
+      required: false,
+      select: false,
+    },
+
+    resetPasswordToken: {
+      type: String,
+      required: false,
+      select: false,
+    },
+
     appointments: [
       {
         type: mongoose.Schema.Types.ObjectId,

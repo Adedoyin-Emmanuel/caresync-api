@@ -197,6 +197,12 @@ class AuthController {
     }
   }
 
+
+  //add the verify user functionality
+
+  //add the verify hospital functionality
+  
+
   static async logout(req: Request, res: Response) {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
