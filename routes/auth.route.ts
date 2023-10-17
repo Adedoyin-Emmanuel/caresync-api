@@ -1,5 +1,6 @@
 import express from "express";
 import AuthController from "../controllers/auth.controller";
+import { useAuth } from "../middlewares";
 import {
   useLoginRateLimiter,
   useVerifyLimiter,
@@ -8,6 +9,7 @@ import {
   useLoginSlowDown,
   useVerifySlowDown,
 } from "../middlewares/rateSlowDown";
+
 const authRouter = express.Router();
 
 authRouter.post(
@@ -22,16 +24,24 @@ authRouter.post("/refresh-token", AuthController.generateRefreshToken);
 //MISC
 authRouter.get(
   "/verify-email",
-  [useVerifyLimiter, useVerifySlowDown],
+  [useAuth, useVerifyLimiter, useVerifySlowDown],
   AuthController.sendEmailToken
 );
 authRouter.post(
   "/verify-email",
-  [useVerifyLimiter, useVerifySlowDown],
+  [useAuth, useVerifyLimiter, useVerifySlowDown],
   AuthController.verifyEmailToken
 );
 
-// authRouter.post("/forget-password",);
-// authRouter.post("/reset-password",);
+authRouter.post(
+  "/forget-password",
+  [useVerifyLimiter, useVerifySlowDown],
+  AuthController.forgotPassword
+);
+authRouter.post(
+  "/reset-password",
+  [useVerifyLimiter, useVerifySlowDown],
+  AuthController.resetPassword
+);
 
 export default authRouter;
