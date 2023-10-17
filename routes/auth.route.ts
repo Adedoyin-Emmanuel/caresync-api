@@ -13,4 +13,11 @@ authRouter.post(
 authRouter.post("/logout", AuthController.logout);
 authRouter.post("/refresh-token", AuthController.generateRefreshToken);
 
+
+//MISC
+authRouter.get("/verify-email",);
+authRouter.post("/verify-email",)
+authRouter.post("/reset-password",);
+
+
 export default authRouter;

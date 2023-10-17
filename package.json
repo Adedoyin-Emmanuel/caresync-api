@@ -37,6 +37,7 @@
     "node": "18.18.0"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^1.0.1",
     "@types/bcryptjs": "^2.4.4",
     "@types/cookie-parser": "^1.4.4",
     "@types/cors": "^2.8.14",

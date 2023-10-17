@@ -14,10 +14,18 @@ interface Hospital {
   clinicName: String;
 }
 
+
 export interface HospitalJWTPayload extends Request {
   hospital: Hospital | any;
 }
 
 export interface UserJWTPayload extends Request {
   user: User | any;
+}
+
+
+export interface AuthRequest extends Request{
+  hospital: Hospital | any;
+  user: User | any;
+  userType: "user" | "hospital",
 }

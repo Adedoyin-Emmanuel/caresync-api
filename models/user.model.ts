@@ -9,6 +9,11 @@ export interface IUser extends mongoose.Document {
   password: string;
   profilePicture: string;
   token?: string;
+  isVerified: boolean;
+  verifyEmailToken?: string;
+  verifyEmailTokenExpire: Date;
+  resetPasswordToken?: string;
+  resetPasswordTokenExpires?: Date,
   appointments: mongoose.Types.ObjectId[];
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
@@ -70,8 +75,20 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
+    verifyEmailTokenExpire: {
+      type: Date,
+      required: false,
+      select: false
+    },
+
     resetPasswordToken: {
       type: String,
+      required: false,
+      select: false,
+    },
+
+    resetPasswordExpire: {
+      type: Date,
       required: false,
       select: false,
     },

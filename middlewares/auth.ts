@@ -29,10 +29,13 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
       if (decodeCookie.role === userRole) {
         req.user = decodeHeader;
         res.user = decodeHeader;
+        req.userType = "user";
         next();
       } else if (decodeCookie.role === hospitalRole) {
         req.hospital = decodeCookie;
         res.hospital = decodeCookie;
+        req.userType = "hospital";
+
         next();
       } else {
         return response(res, 401, "Invalid auth token");
