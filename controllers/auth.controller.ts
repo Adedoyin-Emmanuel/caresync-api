@@ -7,8 +7,8 @@ import * as _ from "lodash";
 import Hospital, { IHospital } from "../models/hospital.model";
 import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
-import transporter from "../utils/mail.config";
 import { response } from "./../utils";
+import { sendEmail } from "./../utils";
 
 class AuthController {
   static async login(req: Request, res: Response) {
@@ -199,29 +199,6 @@ class AuthController {
     }
   }
 
-  static async sendEmail(
-    subject: string,
-    data: string,
-    toEmail: string
-  ): Promise<boolean> {
-    const mailOptions = {
-      from: process.env.MAIL_FROM_ADDRESS,
-      to: toEmail,
-      subject: subject,
-      html: data,
-    };
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) {
-        console.error("Error sending verification email:", error);
-        return false;
-      } else {
-        return true;
-      }
-    });
-
-    return true;
-  }
-
   static async sendEmailToken(req: AuthRequest | any, res: Response) {
     const userType = req.userType;
     let defaultName = "Caresync";
@@ -251,7 +228,8 @@ class AuthController {
       );
       if (!user) return response(res, 404, "User with given email not found");
       const salt = await bcrypt.genSalt(10);
-      const verifyEmailToken = await bcrypt.hash(user._id, salt);
+      console.log(user);
+      const verifyEmailToken = await bcrypt.hash(user._id.toString(), salt);
 
       //update the verifyEmailToken
       user.verifyEmailToken = verifyEmailToken;
@@ -279,7 +257,7 @@ class AuthController {
       
           `;
 
-      const result = await this.sendEmail("Verify Account", data, email);
+      const result = await sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -291,7 +269,10 @@ class AuthController {
       if (!hospital)
         return response(res, 404, "Hospital with given email not found");
       const salt = await bcrypt.genSalt(10);
-      const verifyEmailToken = await bcrypt.hash(hospital._id, salt);
+      const verifyEmailToken = await bcrypt.hash(
+        hospital._id.toString().toString(),
+        salt
+      );
 
       //update the verifyEmailToken
       hospital.verifyEmailToken = verifyEmailToken;
@@ -321,7 +302,7 @@ class AuthController {
       
           `;
 
-      const result = await this.sendEmail("Verify Account", data, email);
+      const result = await sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -419,7 +400,7 @@ class AuthController {
       }
 
       const salt = await bcrypt.genSalt(10);
-      const resetToken = await bcrypt.hash(user._id, salt);
+      const resetToken = await bcrypt.hash(user._id.toString(), salt);
       // 1 hour
       const tokenExpireDate = new Date(Date.now() + 3600000);
 
@@ -449,7 +430,7 @@ class AuthController {
       
           `;
 
-      const result = await this.sendEmail("Verify Account", data, email);
+      const result = await sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -468,7 +449,7 @@ class AuthController {
       }
 
       const salt = await bcrypt.genSalt(10);
-      const resetToken = await bcrypt.hash(hospital._id, salt);
+      const resetToken = await bcrypt.hash(hospital._id.toString(), salt);
       // 1 day
       const tokenExpireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
@@ -497,7 +478,7 @@ class AuthController {
       
           `;
 
-      const result = await this.sendEmail("Verify Account", data, email);
+      const result = await sendEmail("Verify Account", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 

@@ -7,7 +7,7 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
   const tokenFromCookie = req.cookies.accessToken; 
 
   if (!tokenFromHeader || !tokenFromCookie) {
-    return response(res, 401, "You're not authorized to perform this action, not token provided !");
+    return response(res, 401, "You're not authorized to perform this action, no token provided !");
   }
 
   try {
