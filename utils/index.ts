@@ -1,9 +1,6 @@
 import connectToDb from "./connectToDb";
 import response from "./response";
 import sendEmail from "./sendEmail";
+import { generateLongToken } from "./utils";
 
-export {
-  connectToDb,
-  response,
-  sendEmail
-};
+export { connectToDb, generateLongToken, response, sendEmail };

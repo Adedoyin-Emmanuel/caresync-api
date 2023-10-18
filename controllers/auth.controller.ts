@@ -7,8 +7,7 @@ import * as _ from "lodash";
 import Hospital, { IHospital } from "../models/hospital.model";
 import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
-import { response } from "./../utils";
-import { sendEmail } from "./../utils";
+import { generateLongToken, response, sendEmail } from "./../utils";
 
 class AuthController {
   static async login(req: Request, res: Response) {
@@ -227,31 +226,31 @@ class AuthController {
         "+verifyEmailToken +verifyEmailTokenExpire"
       );
       if (!user) return response(res, 404, "User with given email not found");
-      const salt = await bcrypt.genSalt(10);
-      console.log(user);
-      const verifyEmailToken = await bcrypt.hash(user._id.toString(), salt);
+      const verifyEmailToken = generateLongToken();
 
       //update the verifyEmailToken
       user.verifyEmailToken = verifyEmailToken;
       user.verifyEmailTokenExpire = new Date(Date.now() + 24 * 60 * 60 * 1000);
       const updatedUser = await user.save();
+      const domain = `${req.hostname}/api/auth/confirm-email?token=${verifyEmailToken}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
-                    <h1 style="color: #007bff;">Email Verification</h1>
+                    <h1 style="color: #A67EF1; font-weight:bold;">Caresync</h1>
+                    <h3>Email Verification</h3>
       
                     <p style="color: #333;">Dear ${req.user.name}</p>
       
                     <p style="color: #333;">Thank you for creating an account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
       
-                    <a href=https://getcaresync.vercel.app/auth/verfiy?token=${verifyEmailToken} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
-      
-                    <span>Or copy this https://getcaresync.vercel.app/auth/verfiy?token=${verifyEmailToken} and paste it to your browser </span>
+                    <a href=${domain} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #A67EF1; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
+                  <br/>
+                    <span>Or copy this ${domain} and paste it to your browser </span>
       
                     <p style="color: #333;">If you didn't create an account with us, please ignore this email.</p>
       
-                    <p style="color: #333;">Thank you for choosing Caresync.</p>
+                    <p style="color: #333;">Thank you for choosing Caresync</p>
       
                 </div>
       
@@ -261,18 +260,20 @@ class AuthController {
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
-      return response(res, 200, "Email sent successfully", updatedUser);
+      return response(
+        res,
+        200,
+        "Verification mail sent successfully",
+        updatedUser
+      );
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({ email }).select(
         "+verifyEmailToken +verifyEmailTokenExpire"
       );
       if (!hospital)
         return response(res, 404, "Hospital with given email not found");
-      const salt = await bcrypt.genSalt(10);
-      const verifyEmailToken = await bcrypt.hash(
-        hospital._id.toString().toString(),
-        salt
-      );
+
+      const verifyEmailToken = generateLongToken();
 
       //update the verifyEmailToken
       hospital.verifyEmailToken = verifyEmailToken;
@@ -280,23 +281,25 @@ class AuthController {
         Date.now() + 24 * 60 * 60 * 1000
       );
       const updatedHospital = await hospital.save();
+      const domain = `${req.hostname}/api/auth/confirm-email?token=${verifyEmailToken}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
-                    <h1 style="color: #007bff;">Email Verification</h1>
+                    <h1 style="color: #A67EF1; font-weight:bold;">Caresync</h1>
+                    <h3>Email Verification</h3>
       
-                    <p style="color: #333;">Dear ${req.hospital.name}</p>
+                    <p style="color: #333;">Dear ${req.hospital.name},</p>
       
-                    <p style="color: #333;">Thank you for creating an account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
+                    <p style="color: #333;">Thank you for creating an hospital account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
       
-                    <a href=https://getcaresync.vercel.app/auth/verfiy?token=${verifyEmailToken} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
-      
-                    <span>Or copy this https://getcaresync.vercel.app/auth/verfiy?token=${verifyEmailToken} and paste it to your browser </span>
+                    <a href=${domain} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #A67EF1; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
+                  <br/>
+                    <span>Or copy this ${domain} and paste it to your browser </span>
       
                     <p style="color: #333;">If you didn't create an account with us, please ignore this email.</p>
       
-                    <p style="color: #333;">Thank you for choosing Caresync.</p>
+                    <p style="color: #333;">Thank you for choosing Caresync</p>
       
                 </div>
       
@@ -368,28 +371,17 @@ class AuthController {
   }
 
   static async forgotPassword(req: AuthRequest | any, res: Response) {
-    const userType = req.userType;
-    let defaultName = "Caresync";
-
-    switch (userType) {
-      case "user":
-        defaultName = req.user.name;
-        break;
-
-      case "hospital":
-        defaultName = req.hospital.clinicName;
-        break;
-    }
-
     const requestSchema = Joi.object({
       email: Joi.string().required().email(),
-      appBaseUrl: Joi.string().required(),
+      userType: Joi.string().required(),
     });
 
     const { error, value } = requestSchema.validate(req.body);
     if (error) return response(res, 400, error.details[0].message);
 
-    const { email, appBaseUrl } = value;
+    const { email, userType: clientUserType } = value;
+
+    const userType = clientUserType;
 
     if (userType == "user") {
       const user = await User.findOne({ email }).select(
@@ -399,38 +391,41 @@ class AuthController {
         return response(res, 400, "Invalid or expired token!");
       }
 
-      const salt = await bcrypt.genSalt(10);
-      const resetToken = await bcrypt.hash(user._id.toString(), salt);
+      const resetToken = generateLongToken();
       // 1 hour
       const tokenExpireDate = new Date(Date.now() + 3600000);
 
       user.resetPasswordToken = resetToken;
       user.resetPasswordTokenExpires = tokenExpireDate;
       const updatedUser = await user.save();
+      const clientDomain =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:3000/auth/reset-password?token${resetToken}`
+          : `https://getcaresync.vercel.app/auth/reset-password?token${resetToken}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
-                    <h1 style="color: #007bff;">Email Verification</h1>
+                    <h1 style="color: #A67EF1;">Change Password</h1>
       
-                    <p style="color: #333;">Dear ${req.user.name}</p>
+                    <p style="color: #333;">Dear ${user.name},</p>
       
-                    <p style="color: #333;">Thank you for creating an account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
+                    <p style="color: #333;">We received a request to reset your password for your caresync account. To proceed with resetting your password, please click the button below. 
+                    Please note that this link is temporary and will expire in an hour, so make sure to reset your password as soon as possible.
+                    </p>
       
-                    <a href=${appBaseUrl}?token=${resetToken} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
+                    <a href=${clientDomain} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #A67EF1; color: #fff; text-decoration: none; border-radius: 4px;">Change my password</a>
+                    <br/>
+                    <span>Or copy this link ${clientDomain} and paste it to your browser </span>
       
-                    <span>Or copy this ${appBaseUrl}?token=${resetToken} and paste it to your browser </span>
-      
-                    <p style="color: #333;">If you didn't create an account with us, please ignore this email.</p>
+                    <p style="color: #333;">If you didn't initiate a password reset, please ignore this email.</p>
       
                     <p style="color: #333;">Thank you for choosing Caresync.</p>
       
                 </div>
-
-      
           `;
 
-      const result = await sendEmail("Verify Account", data, email);
+      const result = await sendEmail("Change Password", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -448,37 +443,42 @@ class AuthController {
         return response(res, 404, "Hospital not found!");
       }
 
-      const salt = await bcrypt.genSalt(10);
-      const resetToken = await bcrypt.hash(hospital._id.toString(), salt);
+      const resetToken = generateLongToken();
       // 1 day
       const tokenExpireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
       hospital.resetPasswordToken = resetToken;
       hospital.resetPasswordTokenExpires = tokenExpireDate;
       const updatedHospital = await hospital.save();
+      const clientDomain =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:3000/auth/reset-password?token${resetToken}`
+          : `https://getcaresync.vercel.app/auth/reset-password?token${resetToken}`;
 
       const data = `
-                <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
+                  <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
-                    <h1 style="color: #007bff;">Email Verification</h1>
+                    <h1 style="color: #A67EF1;">Change Password</h1>
       
-                    <p style="color: #333;">Dear ${req.hospital.name}</p>
+                    <p style="color: #333;">Dear ${hospital.clinicName},</p>
       
-                    <p style="color: #333;">Thank you for creating an account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
+                    <p style="color: #333;">We received a request to reset your password for your caresync hospital account. To proceed with resetting your password, please click the button below. 
+                    Please note that this link is temporary and will expire in an hour, so make sure to reset your password as soon as possible.
+                    </p>
       
-                    <a href=${appBaseUrl}?token=${resetToken} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 4px;">Verify My Email</a>
+                    <a href=${clientDomain} style="display: inline-block; margin: 20px 0; padding: 10px 20px; background-color: #A67EF1; color: #fff; text-decoration: none; border-radius: 4px;">Change my password</a>
+                    <br/>
+                    <span>Or copy this link ${clientDomain} and paste it to your browser </span>
       
-                    <span>Or copy this ${appBaseUrl}?token=${resetToken} and paste it to your browser </span>
-      
-                    <p style="color: #333;">If you didn't create an account with us, please ignore this email.</p>
+                    <p style="color: #333;">If your hospital didn't initiate a password reset, please ignore this email.</p>
       
                     <p style="color: #333;">Thank you for choosing Caresync.</p>
       
                 </div>
-      
+
           `;
 
-      const result = await sendEmail("Verify Account", data, email);
+      const result = await sendEmail("Change Password", data, email);
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
@@ -488,21 +488,28 @@ class AuthController {
         "Password reset link sent to mail successfully",
         updatedHospital
       );
+    } else {
+      return response(
+        res,
+        400,
+        "Invalid user type, valid userTypes include a user or an hospital!"
+      );
     }
   }
 
   static async resetPassword(req: AuthRequest | any, res: Response) {
-    const userType = req.userType;
-
     const requestSchema = Joi.object({
       token: Joi.string().required(),
       password: Joi.string().required().min(6).max(30),
+      userType: Joi.string().required(),
     });
 
     const { error, value } = requestSchema.validate(req.body);
     if (error) return response(res, 400, error.details[0].message);
-    const { token, password } = value;
+    const { token, password, userType: clientUserType } = value;
     const resetPasswordToken = token;
+    const userType = clientUserType;
+
     if (userType == "user") {
       const user = await User.findOne({
         resetPasswordToken,

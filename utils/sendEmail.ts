@@ -14,7 +14,7 @@ const sendEmail = (
       };
       transporter.sendMail(mailOptions, (error) => {
         if (error) {
-          console.error("Error sending verification email:", error);
+          console.error("Error sending mail:", error);
           reject(error);
         } else {
           resolve(true);

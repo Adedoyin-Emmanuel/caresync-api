@@ -27,17 +27,18 @@ authRouter.get(
   [useAuth, useVerifyLimiter, useVerifySlowDown],
   AuthController.sendEmailToken
 );
-authRouter.post(
-  "/verify-email",
+authRouter.get(
+  "/confirm-email",
   [useAuth, useVerifyLimiter, useVerifySlowDown],
   AuthController.verifyEmailToken
 );
 
-authRouter.post(
-  "/forget-password",
+authRouter.get(
+  "/forgot-password",
   [useVerifyLimiter, useVerifySlowDown],
   AuthController.forgotPassword
 );
+
 authRouter.post(
   "/reset-password",
   [useVerifyLimiter, useVerifySlowDown],
