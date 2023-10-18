@@ -29,7 +29,7 @@ authRouter.get(
 );
 authRouter.get(
   "/confirm-email",
-  [useAuth, useVerifyLimiter, useVerifySlowDown],
+  [useVerifyLimiter, useVerifySlowDown],
   AuthController.verifyEmailToken
 );
 

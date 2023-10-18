@@ -8,6 +8,6 @@ export const useLoginSlowDown = SlowDown({
 
 export const useVerifySlowDown = SlowDown({
   windowMs: 60 * 60 * 1000,
-  delayAfter: 1,
+  delayAfter: 3,
   delayMs: 1000,
 });

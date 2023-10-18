@@ -231,8 +231,13 @@ class AuthController {
       //update the verifyEmailToken
       user.verifyEmailToken = verifyEmailToken;
       user.verifyEmailTokenExpire = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      const updatedUser = await user.save();
-      const domain = `${req.hostname}/api/auth/confirm-email?token=${verifyEmailToken}`;
+      await user.save();
+      const serverURL =
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:2800"
+          : req.hostname;
+      console.log(process.env.NODE_ENV);
+      const domain = `${serverURL}/api/auth/confirm-email?token=${verifyEmailToken}&userType=${userType}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -260,12 +265,7 @@ class AuthController {
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
-      return response(
-        res,
-        200,
-        "Verification mail sent successfully",
-        updatedUser
-      );
+      return response(res, 200, "Verification mail sent successfully");
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({ email }).select(
         "+verifyEmailToken +verifyEmailTokenExpire"
@@ -280,8 +280,12 @@ class AuthController {
       hospital.verifyEmailTokenExpire = new Date(
         Date.now() + 24 * 60 * 60 * 1000
       );
-      const updatedHospital = await hospital.save();
-      const domain = `${req.hostname}/api/auth/confirm-email?token=${verifyEmailToken}`;
+      await hospital.save();
+      const serverURL =
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:2800"
+          : req.hostname;
+      const domain = `${serverURL}/api/auth/confirm-email?token=${verifyEmailToken}&userType=${userType}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -309,16 +313,15 @@ class AuthController {
       if (!result)
         return response(res, 400, "An error occured while sending the email");
 
-      return response(res, 200, "Email sent successfully", updatedHospital);
+      return response(res, 200, "Verification mail sent successfully");
     }
   }
 
   static async verifyEmailToken(req: AuthRequest | any, res: Response) {
     const requestSchema = Joi.object({
       token: Joi.string().required(),
+      userType: Joi.string().required(),
     });
-
-    const userType = req.userType;
 
     const { error, value } = requestSchema.validate(req.query);
     if (error) return response(res, 400, error.details[0].message);
@@ -327,7 +330,7 @@ class AuthController {
         ? `http://localhost:3000/auth/verified`
         : `https://getcaresync.vercel.app/auth/verified`;
 
-    const { token } = value;
+    const { token, userType } = value;
 
     const verifyEmailToken = token;
     if (userType == "user") {
@@ -336,7 +339,12 @@ class AuthController {
         verifyEmailTokenExpire: { $gt: Date.now() },
       }).select("+verifyEmailToken +verifyEmailTokenExpire");
 
-      if (!user) return response(res, 400, "Invalid token");
+      if (!user) {
+        
+      return res.redirect(
+        redirectURL + "?success=false&message=Invalid or expired token!"
+      );
+      }
 
       user.verifyEmailToken = undefined;
       user.verifyEmailTokenExpire = new Date(Date.now());
