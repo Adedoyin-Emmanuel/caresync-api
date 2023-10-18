@@ -346,7 +346,7 @@ class AuthController {
       }
 
       user.verifyEmailToken = undefined;
-      user.verifyEmailTokenExpire = new Date(Date.now());
+      user.verifyEmailTokenExpire = undefined;
       user.isVerified = true;
 
       await user.save();
@@ -367,7 +367,7 @@ class AuthController {
       }
 
       hospital.verifyEmailToken = undefined;
-      hospital.verifyEmailTokenExpire = new Date(Date.now());
+      hospital.verifyEmailTokenExpire = undefined;
       hospital.isVerified = true;
 
       await hospital.save();
@@ -398,7 +398,7 @@ class AuthController {
 
     if (userType == "user") {
       const user = await User.findOne({ email }).select(
-        "+resetPasswordToken +resetPasswordTokenExpires"
+        "+resetPasswordToken +resetPasswordTokenExpire"
       );
       if (!user) {
         return response(res, 400, "Invalid or expired token!");
@@ -409,12 +409,13 @@ class AuthController {
       const tokenExpireDate = new Date(Date.now() + 3600000);
 
       user.resetPasswordToken = resetToken;
-      user.resetPasswordTokenExpires = tokenExpireDate;
-      const updatedUser = await user.save();
+      user.resetPasswordTokenExpire = tokenExpireDate;
+
+      await user.save();
       const clientDomain =
         process.env.NODE_ENV === "development"
-          ? `http://localhost:3000/auth/reset-password?token${resetToken}`
-          : `https://getcaresync.vercel.app/auth/reset-password?token${resetToken}`;
+          ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
+          : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -445,28 +446,27 @@ class AuthController {
       return response(
         res,
         200,
-        "Password reset link sent to mail successfully",
-        updatedUser
+        "Password reset link sent to mail successfully"
       );
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({ email }).select(
-        "+resetPasswordToken +resetPasswordTokenExpires"
+        "+resetPasswordToken +resetPasswordTokenExpire"
       );
       if (!hospital) {
         return response(res, 404, "Hospital not found!");
       }
 
       const resetToken = generateLongToken();
-      // 1 day
-      const tokenExpireDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      // 1 hour
+      const tokenExpireDate = new Date(Date.now() + 3600000);
 
       hospital.resetPasswordToken = resetToken;
-      hospital.resetPasswordTokenExpires = tokenExpireDate;
-      const updatedHospital = await hospital.save();
+      hospital.resetPasswordTokenExpire = tokenExpireDate;
+      await hospital.save();
       const clientDomain =
         process.env.NODE_ENV === "development"
-          ? `http://localhost:3000/auth/reset-password?token${resetToken}`
-          : `https://getcaresync.vercel.app/auth/reset-password?token${resetToken}`;
+          ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
+          : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
 
       const data = `
                   <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -498,8 +498,7 @@ class AuthController {
       return response(
         res,
         200,
-        "Password reset link sent to mail successfully",
-        updatedHospital
+        "Password reset link sent to mail successfully"
       );
     } else {
       return response(
@@ -526,8 +525,8 @@ class AuthController {
     if (userType == "user") {
       const user = await User.findOne({
         resetPasswordToken,
-        resetPasswordTokenExpires: { $gt: Date.now() },
-      }).select("+resetPasswordToken +resetPasswordTokenExpires");
+        resetPasswordTokenExpire: { $gt: Date.now() },
+      }).select("+resetPasswordToken +resetPasswordTokenExpire");
 
       if (!user) return response(res, 400, "Invalid or expired token!");
       // Hash and set the new password
@@ -535,16 +534,16 @@ class AuthController {
       const hashedPassword = await bcrypt.hash(password, salt);
       user.password = hashedPassword;
       user.resetPasswordToken = undefined;
-      user.resetPasswordTokenExpires = undefined;
+      user.resetPasswordTokenExpire = undefined;
 
-      const updatedUser = await user.save();
+      await user.save();
 
-      return response(res, 200, "Password reset successful", updatedUser);
+      return response(res, 200, "Password reset successful");
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({
         resetPasswordToken,
-        resetPasswordTokenExpires: { $gt: Date.now() },
-      }).select("+resetPasswordToken +resetPasswordTokenExpires");
+        resetPasswordTokenExpire: { $gt: Date.now() },
+      }).select("+resetPasswordToken +resetPasswordTokenExpire");
 
       if (!hospital) return response(res, 400, "Invalid or expired token!");
       // Hash and set the new password
@@ -552,11 +551,11 @@ class AuthController {
       const hashedPassword = await bcrypt.hash(password, salt);
       hospital.password = hashedPassword;
       hospital.resetPasswordToken = undefined;
-      hospital.resetPasswordTokenExpires = undefined;
+      hospital.resetPasswordTokenExpire = undefined;
 
-      const updatedHospital = await hospital.save();
+      await hospital.save();
 
-      return response(res, 200, "Password reset successful", updatedHospital);
+      return response(res, 200, "Password reset successful");
     } else {
       return response(res, 404, "No valid user type, please login");
     }
