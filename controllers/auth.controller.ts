@@ -286,14 +286,14 @@ class AuthController {
           ? "http://localhost:2800"
           : req.hostname;
       const domain = `${serverURL}/api/auth/confirm-email?token=${verifyEmailToken}&userType=${userType}`;
-
+      console.log(req.hospital);
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
                     <h1 style="color: #A67EF1; font-weight:bold;">Caresync</h1>
                     <h3>Email Verification</h3>
       
-                    <p style="color: #333;">Dear ${req.hospital.name},</p>
+                    <p style="color: #333;">Dear ${hospital.clinicName},</p>
       
                     <p style="color: #333;">Thank you for creating an hospital account with Caresync. To complete the registration process and become verified,  please verify your email address by clicking the button below:</p>
       
@@ -340,10 +340,9 @@ class AuthController {
       }).select("+verifyEmailToken +verifyEmailTokenExpire");
 
       if (!user) {
-        
-      return res.redirect(
-        redirectURL + "?success=false&message=Invalid or expired token!"
-      );
+        return res.redirect(
+          redirectURL + "?success=false&message=Invalid or expired token!"
+        );
       }
 
       user.verifyEmailToken = undefined;

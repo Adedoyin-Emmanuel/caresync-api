@@ -1,9 +1,9 @@
 import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
+import * as _ from "lodash";
 import Hospital from "../models/hospital.model";
 import { response } from "./../utils";
-import * as _ from "lodash";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -17,12 +17,12 @@ class HospitalController {
     const { error, value } = validationSchema.validate(req.body);
     if (error) return response(res, 400, error.details[0].message);
 
-    //check if email has been taken by another user
+    //check if email has been taken by another hospital
     const { email: emailTaken, username: usernameTaken } = value;
-    const existingEmailUser = await Hospital.findOne({ emailTaken });
+    const existingEmailUser = await Hospital.findOne({ email: emailTaken });
     if (existingEmailUser) return response(res, 400, "Email already taken");
 
-    const existingUsernameUser = await Hospital.findOne({ usernameTaken });
+    const existingUsernameUser = await Hospital.findOne({ username: usernameTaken });
     if (existingUsernameUser)
       return response(res, 400, "Username already taken");
 
@@ -50,7 +50,12 @@ class HospitalController {
       "updatedAt",
     ]);
 
-    return response(res, 201, "Hospital created successfully", filteredHospital);
+    return response(
+      res,
+      201,
+      "Hospital created successfully",
+      filteredHospital
+    );
   }
 
   static async getAllHospitals(req: Request | any, res: Response) {
@@ -138,7 +143,6 @@ class HospitalController {
 
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 200, error.details[0].message);
-
 
     const deletedHospital = await Hospital.findByIdAndDelete(value.id);
     if (!deletedHospital)
