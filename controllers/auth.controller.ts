@@ -319,8 +319,13 @@ class AuthController {
     });
 
     const userType = req.userType;
+
     const { error, value } = requestSchema.validate(req.query);
     if (error) return response(res, 400, error.details[0].message);
+    const redirectURL =
+      process.env.NODE_ENV === "development"
+        ? `http://localhost:3000/auth/verified`
+        : `https://getcaresync.vercel.app/auth/verified`;
 
     const { token } = value;
 
@@ -337,13 +342,10 @@ class AuthController {
       user.verifyEmailTokenExpire = new Date(Date.now());
       user.isVerified = true;
 
-      const updatedUser = await user.save();
+      await user.save();
 
-      return response(
-        res,
-        200,
-        "User Account verified successfully",
-        updatedUser
+      return res.redirect(
+        redirectURL + "?success=true&message=User email verified successfully"
       );
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({
@@ -351,22 +353,26 @@ class AuthController {
         verifyEmailTokenExpire: { $gt: Date.now() },
       }).select("+verifyEmailToken +verifyEmailTokenExpire");
 
-      if (!hospital) return response(res, 400, "Invalid token");
+      if (!hospital) {
+        return res.redirect(
+          redirectURL + "?success=false&message=Invalid or expired token!"
+        );
+      }
 
       hospital.verifyEmailToken = undefined;
       hospital.verifyEmailTokenExpire = new Date(Date.now());
       hospital.isVerified = true;
 
-      const updatedHospital = await hospital.save();
+      await hospital.save();
 
-      return response(
-        res,
-        200,
-        "Hospital Account verified successfully",
-        updatedHospital
+      return res.redirect(
+        redirectURL +
+          "?success=true&message=Hospital email verified successfully"
       );
     } else {
-      return response(res, 404, "No valid user type, please login");
+      return res.redirect(
+        redirectURL + "?success=false&message=No valid user type, please login!"
+      );
     }
   }
 
