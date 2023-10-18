@@ -1,9 +1,14 @@
 import express from "express";
 import { HospitalController } from "../controllers";
 import { useAuth, useCheckRole } from "../middlewares";
+import { useCreateUserLimiter } from "../middlewares";
 const hospitalRouter = express.Router();
 
-hospitalRouter.post("/", [useAuth], HospitalController.createHospital);
+hospitalRouter.post(
+  "/",
+  [useCreateUserLimiter],
+  HospitalController.createHospital
+);
 hospitalRouter.get("/", [useAuth], HospitalController.getAllHospitals);
 hospitalRouter.get("/:id", [useAuth], HospitalController.getHospitalById);
 hospitalRouter.put(
