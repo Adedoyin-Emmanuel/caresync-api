@@ -16,11 +16,28 @@ import {
 import { connectToDb } from "./utils";
 dotenv.config();
 
+const allowedOrigins = [
+  "https://caresync.vercel.app",
+  "http://localhost:3000",
+  
+];
+
 const PORT = process.env.PORT || 2800;
 const app = express();
 
 //middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true, 
+  })
+);
 app.use(cookieParser());
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(morgan("dev"));
