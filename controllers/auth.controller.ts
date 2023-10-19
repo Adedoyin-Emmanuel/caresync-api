@@ -18,7 +18,7 @@ class AuthController {
     });
 
     const { error, value } = requestSchema.validate(req.body);
-    if (error) return response(res, 200, error.details[0].message);
+    if (error) return response(res, 400, error.details[0].message);
 
     const { email, password, userType } = value;
     if (userType !== "user" && userType !== "hospital")

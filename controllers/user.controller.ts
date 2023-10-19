@@ -15,8 +15,10 @@ class UserController {
     });
 
     const { error, value } = validationSchema.validate(req.body);
-    console.log(req.body);
+   
+    
     if (error) return response(res, 400, error.details[0].message);
+    
 
     //check if email has been taken by another user
     const { email: emailTaken, username: usernameTaken } = value;
