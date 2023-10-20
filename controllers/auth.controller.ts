@@ -139,7 +139,6 @@ class AuthController {
       refreshToken,
       privateKey
     );
-    console.log(decoded);
     if (!decoded)
       return response(res, 401, "You're not authorized, Invalid token");
 
@@ -148,7 +147,6 @@ class AuthController {
 
     if (decoded.role === userRole) {
       //that's a user
-
       const user = await User.findById(decoded._id).select("+token");
 
       if (!user || !user.token)
@@ -174,7 +172,7 @@ class AuthController {
         );
       } else {
         // the token is no longer valid, so the user has to login.
-        this.logout(req, res);
+        AuthController.logout(req, res);
       }
     } else if (decoded.role === hospitalRole) {
       //that's an hospital
@@ -203,11 +201,13 @@ class AuthController {
         );
       } else {
         //nobody
-        return response(
-          res,
-          403,
-          "You can't perform this action, no role found"
-        );
+        AuthController.logout(req, res);
+
+        // return response(
+        //   res,
+        //   403,
+        //   "You can't perform this action, no role found"
+        // );
       }
     }
   }
