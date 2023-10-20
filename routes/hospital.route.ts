@@ -22,4 +22,6 @@ hospitalRouter.delete(
   HospitalController.deleteHospital
 );
 
+hospitalRouter.get("/me", [useAuth, useCheckRole("hospital")], HospitalController.getMe);
+
 export default hospitalRouter;

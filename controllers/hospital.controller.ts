@@ -4,6 +4,7 @@ import Joi from "joi";
 import * as _ from "lodash";
 import Hospital from "../models/hospital.model";
 import { response } from "./../utils";
+import { AuthRequest } from "../types/types";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -22,7 +23,9 @@ class HospitalController {
     const existingEmailUser = await Hospital.findOne({ email: emailTaken });
     if (existingEmailUser) return response(res, 400, "Email already taken");
 
-    const existingUsernameUser = await Hospital.findOne({ username: usernameTaken });
+    const existingUsernameUser = await Hospital.findOne({
+      username: usernameTaken,
+    });
     if (existingUsernameUser)
       return response(res, 400, "Username already taken");
 
@@ -63,6 +66,12 @@ class HospitalController {
     //console.log(req.hospital);
 
     return response(res, 200, "Hospitals fetched successfully", allHospitals);
+  }
+
+  static async getMe(req: AuthRequest | any, res: Response) {
+    const hospital = await Hospital.findById(req.hospital._id);
+    if (!hospital) return response(res, 404, "Hospital with given id not found");
+    return response(res, 200, "Hospital info fetched successfully", hospital);
   }
 
   static async getHospitalById(req: Request, res: Response) {

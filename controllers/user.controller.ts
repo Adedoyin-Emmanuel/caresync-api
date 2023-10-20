@@ -4,7 +4,7 @@ import Joi from "joi";
 import * as _ from "lodash";
 import User from "../models/user.model";
 import { response } from "./../utils";
-
+import { AuthRequest } from "../types/types";
 class UserController {
   static async createUser(req: Request, res: Response) {
     const validationSchema = Joi.object({
@@ -77,6 +77,12 @@ class UserController {
     if (!user) return response(res, 404, "User with given id not found");
 
     return response(res, 200, "User fetched successfully", user);
+  }
+
+  static async getMe(req: AuthRequest | any, res: Response) {
+    const user = await User.findById(req.user._id);
+    if (!user) return response(res, 404, "User with given id not found");
+    return response(res, 200, "User info fetched successfully", user);
   }
 
   static async updateUser(req: Request, res: Response) {

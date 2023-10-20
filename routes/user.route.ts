@@ -13,5 +13,6 @@ userRouter.delete(
   [useAuth, useCheckRole("user")],
   UserController.deleteUser
 );
+userRouter.get('/me', [useAuth, useCheckRole("user")], UserController.getMe);
 
 export default userRouter;

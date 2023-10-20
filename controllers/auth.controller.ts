@@ -72,7 +72,9 @@ class AuthController {
         "updatedAt",
       ]);
 
-      return response(res, 200, "Login successful", filteredUser);
+      const dataToClient = {accessToken, ...filteredUser};
+
+      return response(res, 200, "Login successful", dataToClient);
     } else {
       const hospital: IHospital | any = await Hospital.findOne({
         email,
@@ -116,7 +118,10 @@ class AuthController {
         "updatedAt",
       ]);
 
-      return response(res, 200, "Login successful", filteredHospital);
+      const dataToClient = { accessToken, ...filteredHospital  };
+
+
+      return response(res, 200, "Login successful", dataToClient);
     }
   }
 
