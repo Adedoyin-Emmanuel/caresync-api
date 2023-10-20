@@ -13,10 +13,11 @@ export interface IUser extends mongoose.Document {
   verifyEmailToken?: string;
   verifyEmailTokenExpire?: Date;
   resetPasswordToken?: string;
-  resetPasswordTokenExpire?: Date,
+  resetPasswordTokenExpire?: Date;
   appointments: mongoose.Types.ObjectId[];
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
+  healthCareHistory: mongoose.Types.ObjectId[];
   allTotalAppointments?: number;
 
   generateAccessToken(): string;
@@ -57,7 +58,7 @@ const UserSchema = new mongoose.Schema(
       required: false,
       default: "Bridging health with technology",
       max: 500,
-    }, 
+    },
     token: {
       type: String,
       select: false,
@@ -71,11 +72,15 @@ const UserSchema = new mongoose.Schema(
     },
 
     allTotalAppointments: {
-      type:Number,
+      type: Number,
       required: false,
-      default: 0
+      default: 0,
     },
-    
+
+    healthCareHistory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "HealthcareHistory",
+    },
 
     verifyEmailToken: {
       type: String,
@@ -86,7 +91,7 @@ const UserSchema = new mongoose.Schema(
     verifyEmailTokenExpire: {
       type: Date,
       required: false,
-      select: false
+      select: false,
     },
 
     resetPasswordToken: {
