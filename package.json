@@ -33,7 +33,7 @@
     "nodemon": "^3.0.1",
     "typescript": "^5.2.2"
   },
-p
+
   "dependencies": {
     "@types/bcryptjs": "^2.4.4",
     "@types/cookie-parser": "^1.4.4",
