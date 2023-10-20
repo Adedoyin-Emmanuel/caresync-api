@@ -12,13 +12,13 @@ appointmentRouter.post(
 appointmentRouter.get("/", [useAuth], AppointmentController.getAllAppointments);
 appointmentRouter.get(
   "/user/:id",
-  [useAuth],
+  [useAuth, useCheckRole("user")],
   AppointmentController.getAppointmentByUserId
 );
 
 appointmentRouter.get(
   "/hospital/:id",
-  [useAuth],
+  [useAuth, useCheckRole("hospital")],
   AppointmentController.getAppointmentByHospitalId
 );
 appointmentRouter.get(
