@@ -1,7 +1,6 @@
 import express from "express";
 import { HospitalController } from "../controllers";
-import { useAuth, useCheckRole } from "../middlewares";
-import { useCreateUserLimiter } from "../middlewares";
+import { useAuth, useCheckRole, useCreateUserLimiter } from "../middlewares";
 const hospitalRouter = express.Router();
 
 hospitalRouter.post(
@@ -9,6 +8,7 @@ hospitalRouter.post(
   [useCreateUserLimiter],
   HospitalController.createHospital
 );
+hospitalRouter.get("/me", [useAuth], HospitalController.getMe);
 hospitalRouter.get("/", [useAuth], HospitalController.getAllHospitals);
 hospitalRouter.get("/:id", [useAuth], HospitalController.getHospitalById);
 hospitalRouter.put(
@@ -22,6 +22,5 @@ hospitalRouter.delete(
   HospitalController.deleteHospital
 );
 
-hospitalRouter.get("/me", [useAuth, useCheckRole("hospital")], HospitalController.getMe);
 
 export default hospitalRouter;

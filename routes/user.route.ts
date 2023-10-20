@@ -6,6 +6,7 @@ const userRouter = express.Router();
 
 userRouter.post("/", [useCreateUserLimiter], UserController.createUser);
 userRouter.put("/", [useAuth, useCheckRole("user")], UserController.updateUser);
+userRouter.get('/me', [useAuth], UserController.getMe);
 userRouter.get("/", [useAuth], UserController.getAllUsers);
 userRouter.get("/:id", [useAuth], UserController.getUserById);
 userRouter.delete(
@@ -13,6 +14,5 @@ userRouter.delete(
   [useAuth, useCheckRole("user")],
   UserController.deleteUser
 );
-userRouter.get('/me', [useAuth, useCheckRole("user")], UserController.getMe);
 
 export default userRouter;

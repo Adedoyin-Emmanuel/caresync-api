@@ -6,6 +6,8 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
   const tokenFromHeader = req.headers["authorization"];
   const tokenFromCookie = req.cookies.accessToken; 
 
+  console.log(tokenFromHeader);
+
   if (!tokenFromHeader || !tokenFromCookie) {
     return response(res, 401, "You're not authorized to perform this action, no token provided !");
   }
@@ -38,6 +40,7 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
 
         next();
       } else {
+        console.log("invalid auth token!");
         return response(res, 401, "Invalid auth token");
       }
     } else {
