@@ -3,52 +3,59 @@ import Joi from "joi";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { response } from "./../utils";
+import { AuthRequest } from "../types/types";
+
+
 class AppointmentController {
-  static async createAppointment(req: Request, res: Response) {
-    const validationSchema = Joi.object({
-      title: Joi.string().required().max(50),
-      description: Joi.string().required().max(1000),
-      hospitalId: Joi.string().required(),
-      userId: Joi.string().required(),
-      startDate: Joi.date().iso().required(),
-      endDate: Joi.date().iso().required(),
-    });
 
-    const { error, value } = validationSchema.validate(req.body);
-    if (error) return response(res, 400, error.details[0].message);
+static async createAppointment(req: Request, res: Response) {
+  const validationSchema = Joi.object({
+    title: Joi.string().required().max(50),
+    description: Joi.string().required().max(1000),
+    hospitalId: Joi.string().required(),
+    userId: Joi.string().required(),
+    startDate: Joi.date().iso().required(),
+    endDate: Joi.date().iso().required(),
+  });
 
-    try {
-      const appointment: any = await Appointment.create(value);
+  const { error, value } = validationSchema.validate(req.body);
+  if (error) return response(res, 400, error.details[0].message);
 
-      // Update User's Appointments
-      await User.findByIdAndUpdate(
-        value.userId,
-        { $push: { appointments: appointment._id } },
-        { new: true }
-      );
+  try {
+    // Check if the user and hospital exist in the database
+    const user = await User.findById(value.userId);
+    const hospital = await Hospital.findById(value.hospitalId);
 
-      // Update Hospital's Appointments
-      await Hospital.findByIdAndUpdate(
-        value.hospitalId,
-        { $push: { appointments: appointment._id } },
-        { new: true }
-      );
-
-      return response(
-        res,
-        201,
-        "Appointment created successfully",
-        appointment
-      );
-    } catch (error) {
-      console.log(error);
-      return response(
-        res,
-        500,
-        `An error occurred while creating the appointment ${error}`
-      );
+    if (!user) {
+      return response(res, 400, 'User not found');
     }
+
+    if (!hospital) {
+      return response(res, 400, 'Hospital not found');
+    }
+
+    const appointment: any = await Appointment.create(value);
+
+    // Update User's Appointments
+    await User.findByIdAndUpdate(
+      value.userId,
+      { $push: { appointments: appointment._id } },
+      { new: true }
+    );
+
+    // Update Hospital's Appointments
+    await Hospital.findByIdAndUpdate(
+      value.hospitalId,
+      { $push: { appointments: appointment._id } },
+      { new: true }
+    );
+
+    return response(res, 201, 'Appointment created successfully', appointment);
+  } catch (error) {
+    console.error(error);
+    return response(res, 500, `An error occurred while creating the appointment ${error}`);
   }
+}
 
   static async getAllAppointments(req: Request, res: Response) {
     const allAppointments = await Appointment.find();
@@ -74,6 +81,30 @@ class AppointmentController {
       return response(res, 404, "Appointment with given id not found");
 
     return response(res, 200, "Appointment fetched successfully", appointment);
+  }
+
+  static async getAppointmentByUserId(req: AuthRequest | any, res: Response) {
+    const userId = req.user_id;
+    const appointments = await Appointment.find({ userId });
+    if (!appointments) return response(res, 404, "No appointments found");
+    return response(
+      res,
+      200,
+      "Appointments fetched successfully",
+      appointments
+    );
+  }
+
+  static async getAppointmentByHospitalId(req: AuthRequest | any, res: Response) {
+    const hospitalId = req.hospital._id;
+    const appointments = await Appointment.find({ hospitalId });
+    if (!appointments) return response(res, 404, "No appointments found");
+    return response(
+      res,
+      200,
+      "Appointments fetched successfully",
+      appointments
+    );
   }
 
   static async updateAppointment(req: Request, res: Response) {

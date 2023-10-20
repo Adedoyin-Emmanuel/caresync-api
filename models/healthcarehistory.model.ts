@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 export interface IHealthCareHistory extends mongoose.Document {
   meetingDate: Date;
-  user: string;
-  hospital: string;
+  user: mongoose.Types.ObjectId[];
+  hospital: mongoose.Types.ObjectId[];
   meetingPurpose: string;
   meetingNotes: string;
-  userReview: string;
+  userReview: mongoose.Types.ObjectId[];
   status: "scheduled" | "completed" | "cancelled";
 }
 
