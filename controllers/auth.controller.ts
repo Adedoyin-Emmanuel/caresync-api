@@ -72,7 +72,7 @@ class AuthController {
         "updatedAt",
       ]);
 
-      const dataToClient = {accessToken, ...filteredUser};
+      const dataToClient = { accessToken, ...filteredUser };
 
       return response(res, 200, "Login successful", dataToClient);
     } else {
@@ -118,8 +118,7 @@ class AuthController {
         "updatedAt",
       ]);
 
-      const dataToClient = { accessToken, ...filteredHospital  };
-
+      const dataToClient = { accessToken, ...filteredHospital };
 
       return response(res, 200, "Login successful", dataToClient);
     }
@@ -167,7 +166,12 @@ class AuthController {
           maxAge: config.get("App.cookieAccessTokenExpiration"),
           path: "/",
         });
-        return response(res, 200, "Access token generated successfully");
+        return response(
+          res,
+          200,
+          "Access token generated successfully",
+          newAccessToken
+        );
       } else {
         // the token is no longer valid, so the user has to login.
         this.logout(req, res);
@@ -191,7 +195,12 @@ class AuthController {
           maxAge: config.get("App.cookieAccessTokenExpiration"),
           path: "/",
         });
-        return response(res, 200, "Access token generated successfully");
+        return response(
+          res,
+          200,
+          "Access token generated successfully",
+          newAccessToken
+        );
       } else {
         //nobody
         return response(

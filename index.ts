@@ -42,7 +42,7 @@ app.use(cookieParser());
 app.use(bodyParser.json({ limit: "100mb" }));
 app.use(morgan("dev"));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(useRateLimiter);
+//app.use(useRateLimiter);
 
 //endpoints
 app.use("/api/auth", authRouter);
