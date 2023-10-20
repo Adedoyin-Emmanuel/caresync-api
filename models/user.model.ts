@@ -77,11 +77,6 @@ const UserSchema = new mongoose.Schema(
       default: 0,
     },
 
-    healthCareHistory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "HealthcareHistory",
-    },
-
     verifyEmailToken: {
       type: String,
       required: false,
@@ -110,6 +105,10 @@ const UserSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "Appointments",
       },
+    ],
+
+    healthCareHistory: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "HealthcareHistory" },
     ],
     messages: [
       {
