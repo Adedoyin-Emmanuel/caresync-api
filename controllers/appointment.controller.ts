@@ -3,6 +3,9 @@ import Joi from "joi";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { response } from "./../utils";
+import { AuthRequest } from "../types/types";
+
+
 class AppointmentController {
   static async createAppointment(req: Request, res: Response) {
     const validationSchema = Joi.object({
@@ -74,6 +77,30 @@ class AppointmentController {
       return response(res, 404, "Appointment with given id not found");
 
     return response(res, 200, "Appointment fetched successfully", appointment);
+  }
+
+  static async getAppointmentByUserId(req: AuthRequest | any, res: Response) {
+    const userId = req.user_id;
+    const appointments = await Appointment.find({ userId });
+    if (!appointments) return response(res, 404, "No appointments found");
+    return response(
+      res,
+      200,
+      "Appointments fetched successfully",
+      appointments
+    );
+  }
+
+  static async getAppointmentByHospitalId(req: AuthRequest | any, res: Response) {
+    const hospitalId = req.hospital._id;
+    const appointments = await Appointment.find({ hospitalId });
+    if (!appointments) return response(res, 404, "No appointments found");
+    return response(
+      res,
+      200,
+      "Appointments fetched successfully",
+      appointments
+    );
   }
 
   static async updateAppointment(req: Request, res: Response) {
