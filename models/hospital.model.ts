@@ -17,6 +17,8 @@ export interface IHospital extends mongoose.Document {
   appointments: mongoose.Types.ObjectId[];
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
+  allTotalAppointments?: number;
+
 
   generateAccessToken(): string;
   generateRefreshToken(): string;
@@ -71,6 +73,12 @@ const HospitalSchema = new mongoose.Schema(
       type: Boolean,
       required: false,
       default: false,
+    },
+
+    allTotalAppointments: {
+      type:Number,
+      required: false,
+      default: 0
     },
 
     verifyEmailToken: {
