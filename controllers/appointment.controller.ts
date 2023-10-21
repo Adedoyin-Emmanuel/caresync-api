@@ -2,60 +2,67 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
-import { response } from "./../utils";
 import { AuthRequest } from "../types/types";
-
+import { response } from "./../utils";
 
 class AppointmentController {
+  static async createAppointment(req: Request, res: Response) {
+    const validationSchema = Joi.object({
+      title: Joi.string().required().max(50),
+      description: Joi.string().required().max(1000),
+      hospitalId: Joi.string().required(),
+      userId: Joi.string().required(),
+      startDate: Joi.date().iso().required(),
+      endDate: Joi.date().iso().required(),
+    });
 
-static async createAppointment(req: Request, res: Response) {
-  const validationSchema = Joi.object({
-    title: Joi.string().required().max(50),
-    description: Joi.string().required().max(1000),
-    hospitalId: Joi.string().required(),
-    userId: Joi.string().required(),
-    startDate: Joi.date().iso().required(),
-    endDate: Joi.date().iso().required(),
-  });
+    const { error, value } = validationSchema.validate(req.body);
+    if (error) return response(res, 400, error.details[0].message);
 
-  const { error, value } = validationSchema.validate(req.body);
-  if (error) return response(res, 400, error.details[0].message);
+    try {
+      // Check if the user and hospital exist in the database
+      const user = await User.findById(value.userId);
+      const hospital = await Hospital.findById(value.hospitalId);
 
-  try {
-    // Check if the user and hospital exist in the database
-    const user = await User.findById(value.userId);
-    const hospital = await Hospital.findById(value.hospitalId);
+      if (!user) {
+        return response(res, 400, "User not found");
+      }
 
-    if (!user) {
-      return response(res, 400, 'User not found');
+      if (!hospital) {
+        return response(res, 400, "Hospital not found");
+      }
+
+      const appointment: any = await Appointment.create(value);
+
+      // Update User's Appointments
+      await User.findByIdAndUpdate(
+        value.userId,
+        { $push: { appointments: appointment._id } },
+        { new: true }
+      );
+
+      // Update Hospital's Appointments
+      await Hospital.findByIdAndUpdate(
+        value.hospitalId,
+        { $push: { appointments: appointment._id } },
+        { new: true }
+      );
+
+      return response(
+        res,
+        201,
+        "Appointment created successfully",
+        appointment
+      );
+    } catch (error) {
+      console.error(error);
+      return response(
+        res,
+        500,
+        `An error occurred while creating the appointment ${error}`
+      );
     }
-
-    if (!hospital) {
-      return response(res, 400, 'Hospital not found');
-    }
-
-    const appointment: any = await Appointment.create(value);
-
-    // Update User's Appointments
-    await User.findByIdAndUpdate(
-      value.userId,
-      { $push: { appointments: appointment._id } },
-      { new: true }
-    );
-
-    // Update Hospital's Appointments
-    await Hospital.findByIdAndUpdate(
-      value.hospitalId,
-      { $push: { appointments: appointment._id } },
-      { new: true }
-    );
-
-    return response(res, 201, 'Appointment created successfully', appointment);
-  } catch (error) {
-    console.error(error);
-    return response(res, 500, `An error occurred while creating the appointment ${error}`);
   }
-}
 
   static async getAllAppointments(req: Request, res: Response) {
     const allAppointments = await Appointment.find();
@@ -84,7 +91,14 @@ static async createAppointment(req: Request, res: Response) {
   }
 
   static async getAppointmentByUserId(req: AuthRequest | any, res: Response) {
-    const userId = req.user_id;
+    const requestSchema = Joi.object({
+      id: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { id: userId } = value;
     const appointments = await Appointment.find({ userId });
     if (!appointments) return response(res, 404, "No appointments found");
     return response(
@@ -95,8 +109,18 @@ static async createAppointment(req: Request, res: Response) {
     );
   }
 
-  static async getAppointmentByHospitalId(req: AuthRequest | any, res: Response) {
-    const hospitalId = req.hospital._id;
+  static async getAppointmentByHospitalId(
+    req: AuthRequest | any,
+    res: Response
+  ) {
+    const requestSchema = Joi.object({
+      id: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { id: hospitalId } = value;
     const appointments = await Appointment.find({ hospitalId });
     if (!appointments) return response(res, 404, "No appointments found");
     return response(
@@ -104,6 +128,46 @@ static async createAppointment(req: Request, res: Response) {
       200,
       "Appointments fetched successfully",
       appointments
+    );
+  }
+
+  static async getLatestAppointments(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      limit: Joi.number().min(1),
+      userType: Joi.string().valid("user", "hospital").required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.query);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const requestSchema2 = Joi.object({
+      id: Joi.string().required(),
+    });
+
+    const { error: error2, value: value2 } = requestSchema2.validate(
+      req.params
+    );
+    if (error2) return response(res, 400, error2.details[0].message);
+
+    // Get the appointments
+    const { limit, userType } = value;
+    const { id } = value2;
+
+    const filter = userType === "user" ? { userId: id } : { hospitalId: id };
+
+    const latestAppointments = await Appointment.find(filter)
+      .sort({ startDate: -1 })
+      .limit(limit);
+
+    if (!latestAppointments.length) {
+      return response(res, 404, "No latest appointments found!");
+    }
+
+    return response(
+      res,
+      200,
+      "Latest appointments fetched successfully",
+      latestAppointments
     );
   }
 
