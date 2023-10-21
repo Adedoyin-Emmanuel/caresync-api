@@ -11,11 +11,13 @@ appointmentRouter.post(
 );
 appointmentRouter.get("/", [useAuth], AppointmentController.getAllAppointments);
 appointmentRouter.get(
+  "/latest/:id",
+  AppointmentController.getLatestAppointments
+);
+appointmentRouter.get(
   "/user/:id",
   AppointmentController.getAppointmentByUserId
 );
-
-appointmentRouter.get("/latest", AppointmentController.getLatestAppointments);
 
 appointmentRouter.get(
   "/hospital/:id",
@@ -26,6 +28,7 @@ appointmentRouter.get(
   [useAuth],
   AppointmentController.getAppointmentById
 );
+
 appointmentRouter.put(
   "/:id",
   [useAuth],
