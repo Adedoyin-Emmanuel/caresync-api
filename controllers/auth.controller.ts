@@ -132,7 +132,7 @@ class AuthController {
     }
     const refreshToken = req.cookies.refreshToken;
 
-    if (!refreshToken) return response(res, 401, "Refresh token not found!");
+    if (!refreshToken) return AuthController.logout(req, res);
     const privateKey: any = process.env.JWT_PRIVATE_KEY;
 
     const decoded: customJwtPayload | any = jwt.verify(

@@ -9,7 +9,7 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
     return response(
       res,
       401,
-      "You're not authorized to perform this action, no token provided !"
+      "You're not authorized to perform this action, no access token!"
     );
   }
 
