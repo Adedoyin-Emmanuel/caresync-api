@@ -32,6 +32,21 @@ class AppointmentController {
         return response(res, 400, "Hospital not found");
       }
 
+      // Check for conflicts with existing appointments for the same hospital and time range
+      const existingAppointment = await Appointment.findOne({
+        hospitalId: value.hospitalId,
+        startDate: { $lt: value.endDate },
+        endDate: { $gt: value.startDate },
+      });
+
+      if (existingAppointment) {
+        return response(
+          res,
+          409,
+          "Appointment time range conflicts with an existing appointment."
+        );
+      }
+
       const appointment: any = await Appointment.create(value);
 
       // Update User's Appointments
