@@ -117,25 +117,25 @@ class HospitalController {
 
   static async getHospitalAverageRating(req: Request, res: Response) {
     const requestSchema = Joi.object({
-      hospitalId: Joi.string().required(),
+      id: Joi.string().required(),
     });
 
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
-    const { hospitalId } = value;
+    const { id:hospitalId } = value;
     const reviews = await Review.find({ hospitalId });
 
     if (reviews.length == 0)
       return response(res, 404, "No reviews found for this hospital", []);
     const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
-    const averageRating = totalRating / reviews.length;
+    const rating = totalRating / reviews.length;
 
     return response(
       res,
       200,
       "Average rating fetched successfully",
-      averageRating
+      rating
     );
   }
 
