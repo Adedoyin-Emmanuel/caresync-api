@@ -4,6 +4,14 @@ import { response } from "../utils";
 
 const useAuth = (req: any, res: any, next: NextFunction) => {
   const tokenFromCookie = req.cookies.accessToken;
+  const refreshTokenCookie = req.cookies.refreshToken;
+
+  //just in case of logout
+  if (!refreshTokenCookie) {
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+    return response(res, 401, "Access denied, no refresh token");
+  }
 
   if (!tokenFromCookie) {
     return response(
