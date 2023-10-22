@@ -61,11 +61,30 @@ class HospitalController {
     );
   }
 
-  static async getAllHospitals(req: Request | any, res: Response) {
+  static async getAllHospitals(req: Request, res: Response) {
     const allHospitals = await Hospital.find();
-    //console.log(req.hospital);
 
     return response(res, 200, "Hospitals fetched successfully", allHospitals);
+  }
+
+
+  static async searchHospital(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      searchTerm: Joi.string().required(),
+    });
+    const { error, value } = requestSchema.validate(req.params);
+    const { searchTerm } = value;
+
+    const hospitals = await Hospital.find({
+      $or: [
+        { clinicName: { $regex: searchTerm, $options: "i" } },
+        { username: { $regex: searchTerm, $options: "i" } },
+      ],
+    });
+
+    if (!hospitals) return response(res, 200, "No hospitals found", []);
+
+    return response(res, 200, "Hospital fetched successfully", hospitals);
   }
 
   static async getMe(req: AuthRequest | any, res: Response) {
