@@ -132,7 +132,6 @@ class AppointmentController {
   }
 
   static async getLatestAppointments(req: Request, res: Response) {
-
     const requestSchema2 = Joi.object({
       id: Joi.string().required(),
     });
@@ -142,7 +141,6 @@ class AppointmentController {
     );
     if (error2) return response(res, 400, error2.details[0].message);
 
-
     const requestSchema = Joi.object({
       limit: Joi.number().min(1),
       userType: Joi.string().valid("user", "hospital").required(),
@@ -150,8 +148,6 @@ class AppointmentController {
 
     const { error, value } = requestSchema.validate(req.query);
     if (error) return response(res, 400, error.details[0].message);
-
-
 
     // Get the appointments
     const { limit, userType } = value;
@@ -164,7 +160,7 @@ class AppointmentController {
       .limit(limit);
 
     if (!latestAppointments.length) {
-      return response(res, 200, "No latest appointments found!");
+      return response(res, 200, "No latest appointments found!", []);
     }
 
     return response(

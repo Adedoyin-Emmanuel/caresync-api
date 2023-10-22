@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 export interface IHealthCareHistory extends mongoose.Document {
   meetingDate: Date;
-  user: mongoose.Types.ObjectId[];
-  hospital: mongoose.Types.ObjectId[];
+  userId: mongoose.Types.ObjectId[];
+  hospitalId: mongoose.Types.ObjectId[];
   meetingPurpose: string;
   meetingNotes: string;
   userReview: mongoose.Types.ObjectId[];
@@ -13,11 +13,11 @@ export interface IHealthCareHistory extends mongoose.Document {
 const healthcareHistorySchema = new mongoose.Schema(
   {
     meetingDate: Date,
-    user: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
-    hospital: {
+    hospitalId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hospital",
     },

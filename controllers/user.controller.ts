@@ -89,6 +89,7 @@ class UserController {
     const requestSchema = Joi.object({
       name: Joi.string().required().max(50),
       username: Joi.string().required().max(20),
+      bio: Joi.string().required().max(500),
       email: Joi.string().required().email(),
     });
 
@@ -139,7 +140,7 @@ class UserController {
       options
     );
 
-    return response(res, 200, "User updated successfully", updatedUser);
+    return response(res, 200, "User details updated successfully", updatedUser);
   }
 
   static async deleteUser(req: Request, res: Response) {
