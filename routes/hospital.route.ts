@@ -12,6 +12,7 @@ hospitalRouter.get("/me", [useAuth], HospitalController.getMe);
 hospitalRouter.get("/", [useAuth], HospitalController.getAllHospitals);
 hospitalRouter.get("/:id", [useAuth], HospitalController.getHospitalById);
 hospitalRouter.get("/search", HospitalController.searchHospital);
+hospitalRouter.get("/rating", HospitalController.getHospitalAverageRating);
 hospitalRouter.put(
   "/",
   [useAuth, useCheckRole("hospital")],
@@ -22,6 +23,5 @@ hospitalRouter.delete(
   [useAuth, useCheckRole("hospital")],
   HospitalController.deleteHospital
 );
-
 
 export default hospitalRouter;

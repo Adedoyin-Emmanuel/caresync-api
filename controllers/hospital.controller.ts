@@ -2,9 +2,10 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
 import * as _ from "lodash";
+import { Review } from "../models";
 import Hospital from "../models/hospital.model";
-import { response } from "./../utils";
 import { AuthRequest } from "../types/types";
+import { response } from "./../utils";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -67,12 +68,13 @@ class HospitalController {
     return response(res, 200, "Hospitals fetched successfully", allHospitals);
   }
 
-
   static async searchHospital(req: Request, res: Response) {
     const requestSchema = Joi.object({
       searchTerm: Joi.string().required(),
     });
-    const { error, value } = requestSchema.validate(req.params);
+    const { error, value } = requestSchema.validate(req.query);
+    if (error) return response(res, 400, error.details[0].message);
+
     const { searchTerm } = value;
 
     const hospitals = await Hospital.find({
@@ -82,7 +84,10 @@ class HospitalController {
       ],
     });
 
-    if (!hospitals) return response(res, 200, "No hospitals found", []);
+    if (hospitals.length == 0)
+      return response(res, 404, "No hospitals found", []);
+
+    if (!hospitals) return response(res, 400, "Couldn't get hospitals");
 
     return response(res, 200, "Hospital fetched successfully", hospitals);
   }
@@ -90,7 +95,8 @@ class HospitalController {
   static async getMe(req: AuthRequest | any, res: Response) {
     console.log(req.hospital);
     const hospital = await Hospital.findById(req.hospital._id);
-    if (!hospital) return response(res, 404, "Hospital with given id not found");
+    if (!hospital)
+      return response(res, 404, "Hospital with given id not found");
     return response(res, 200, "Hospital info fetched successfully", hospital);
   }
 
@@ -107,6 +113,30 @@ class HospitalController {
       return response(res, 404, "Hospital with given id not found");
 
     return response(res, 200, "Hospital fetched successfully", hospital);
+  }
+
+  static async getHospitalAverageRating(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      hospitalId: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { hospitalId } = value;
+    const reviews = await Review.find({ hospitalId });
+
+    if (reviews.length == 0)
+      return response(res, 404, "No reviews found for this hospital", []);
+    const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const averageRating = totalRating / reviews.length;
+
+    return response(
+      res,
+      200,
+      "Average rating fetched successfully",
+      averageRating
+    );
   }
 
   static async updateHospital(req: Request, res: Response) {
