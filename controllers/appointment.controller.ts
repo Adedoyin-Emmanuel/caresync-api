@@ -114,7 +114,9 @@ class AppointmentController {
     if (error) return response(res, 400, error.details[0].message);
 
     const { id: userId } = value;
-    const appointments = await Appointment.find({ userId });
+      const appointments = await Appointment.find({ userId })
+        .sort({ createdAt: -1 })
+        .exec();
     if (!appointments) return response(res, 404, "No appointments found");
     return response(
       res,
