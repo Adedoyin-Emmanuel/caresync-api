@@ -18,6 +18,7 @@ export interface IHospital extends mongoose.Document {
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
   healthCareHistory: mongoose.Types.ObjectId[];
+  location?: string;
 
   allTotalAppointments?: number;
 
@@ -62,6 +63,12 @@ const HospitalSchema = new mongoose.Schema(
       required: false,
       default: "Bridging health with technology",
       max: 500,
+    },
+
+    location: {
+      type: String,
+      required: false,
+      default: "",
     },
 
     token: {

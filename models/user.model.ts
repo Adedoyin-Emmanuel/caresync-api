@@ -19,6 +19,7 @@ export interface IUser extends mongoose.Document {
   reviews: mongoose.Types.ObjectId[];
   healthCareHistory: mongoose.Types.ObjectId[];
   allTotalAppointments?: number;
+  location?: string;
 
   generateAccessToken(): string;
   generateRefreshToken(): string;
@@ -69,6 +70,12 @@ const UserSchema = new mongoose.Schema(
       type: Boolean,
       required: false,
       default: false,
+    },
+
+    location: {
+      type: String,
+      required: false,
+      default: ""
     },
 
     allTotalAppointments: {
