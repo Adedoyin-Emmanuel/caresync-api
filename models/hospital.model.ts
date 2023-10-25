@@ -68,6 +68,7 @@ const HospitalSchema = new mongoose.Schema(
     location: {
       type: String,
       required: false,
+      max: 50,
       default: "",
     },
 

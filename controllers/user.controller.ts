@@ -91,6 +91,7 @@ class UserController {
       username: Joi.string().required().max(20),
       bio: Joi.string().required().max(500),
       email: Joi.string().required().email(),
+      location: Joi.string().required().max(50)
     });
 
     const { error: requestBodyError, value: requestBodyValue } =

@@ -144,6 +144,7 @@ class HospitalController {
       clinicName: Joi.string().required().max(50),
       username: Joi.string().required().max(20),
       email: Joi.string().required().email(),
+      location: Joi.string().required().max(50)
     });
 
     const { error: requestBodyError, value: requestBodyValue } =
