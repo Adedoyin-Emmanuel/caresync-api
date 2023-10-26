@@ -188,49 +188,62 @@ class AppointmentController {
     );
   }
 
-  static async updateAppointment(req: Request, res: Response) {
-    const requestSchema = Joi.object({
-      title: Joi.string().max(50),
-      description: Joi.string().max(1000),
-      status: Joi.string().required(),
-      startDate: Joi.date().iso(),
-      endDate: Joi.date().iso(),
-    });
+static async updateAppointment(req: Request, res: Response) {
+  const requestSchema = Joi.object({
+    title: Joi.string().max(50),
+    description: Joi.string().max(1000),
+    status: Joi.string().required(),
+    startDate: Joi.date().iso(),
+    endDate: Joi.date().iso(),
+  });
 
-    const { error: requestBodyError, value: requestBodyValue } =
-      requestSchema.validate(req.body);
-    if (requestBodyError)
-      return response(res, 400, requestBodyError.details[0].message);
+  const { error: requestBodyError, value: requestBodyValue } =
+    requestSchema.validate(req.body);
+  if (requestBodyError)
+    return response(res, 400, requestBodyError.details[0].message);
 
-    const requestIdSchema = Joi.object({
-      id: Joi.string().required(),
-    });
+  const requestIdSchema = Joi.object({
+    id: Joi.string().required(),
+  });
 
-    const { error: requestParamsError, value: requestParamsValue } =
-      requestIdSchema.validate(req.params);
-    if (requestParamsError)
-      return response(res, 400, requestParamsError.details[0].message);
+  const { error: requestParamsError, value: requestParamsValue } =
+    requestIdSchema.validate(req.params);
+  if (requestParamsError)
+    return response(res, 400, requestParamsError.details[0].message);
 
-    //check if hospital with id exist
-    const { id } = requestParamsValue;
-    const existingAppointment = await Appointment.findById(id);
-    if (!existingAppointment)
-      return response(res, 404, "Appointment with given id not found");
+  // Check if appointment with the given id exists
+  const { id } = requestParamsValue;
+  const existingAppointment = await Appointment.findById(id);
+  if (!existingAppointment)
+    return response(res, 404, "Appointment with given id not found");
 
-    const options = { new: true, runValidators: true };
-    const updatedAppointment = await Appointment.findByIdAndUpdate(
-      id,
-      requestBodyValue,
-      options
-    );
-
+  // Check for conflicts with existing appointments for the same hospital and time range
+  if (
+    requestBodyValue.startDate &&
+    requestBodyValue.endDate &&
+    requestBodyValue.startDate > requestBodyValue.endDate
+  ) {
     return response(
       res,
-      200,
-      "Appointment updated successfully",
-      updatedAppointment
+      400,
+      "End date cannot be earlier than the start date"
     );
   }
+
+  const options = { new: true, runValidators: true };
+  const updatedAppointment = await Appointment.findByIdAndUpdate(
+    id,
+    requestBodyValue,
+    options
+  );
+
+  return response(
+    res,
+    200,
+    "Appointment updated successfully",
+    updatedAppointment
+  );
+}
 
   static async deleteAppointment(req: Request, res: Response) {
     const requestSchema = Joi.object({
