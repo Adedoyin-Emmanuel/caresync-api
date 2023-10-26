@@ -245,6 +245,41 @@ static async updateAppointment(req: Request, res: Response) {
   );
 }
 
+  static async cancelAppointment(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      id: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const appointment = await Appointment.findById(value.id);
+    if (!appointment) return response(res, 404, "Appointment with given id not found!");
+
+    if (appointment.status === "failed") return response(res, 400, "Appointment is already cancelled!");
+
+    appointment.status = "failed";
+
+    const cancelledAppointment = await appointment.save();
+
+    return response(res, 200, "Appointment cancelled successfully", cancelledAppointment);
+    
+  }
+  
+
+  static async approveAppointment(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      id: Joi.string().required(),
+    });
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const appointment = await Appointment.findById(value.id);
+    if (!appointment) return response(res, 404, "Appointment with given id not found!");
+
+    if (appointment.status === "failed") return response(res, 400, "Appointment is already cancelled");
+  }
+
   static async deleteAppointment(req: Request, res: Response) {
     const requestSchema = Joi.object({
       id: Joi.string().required(),

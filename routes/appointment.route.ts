@@ -35,6 +35,22 @@ appointmentRouter.put(
   [useAuth],
   AppointmentController.updateAppointment
 );
+
+//a user and an hospital should be able to cancel appointments
+appointmentRouter.put(
+  "/cancel/:id",
+  [useAuth],
+  AppointmentController.cancelAppointment
+);
+
+//only an hospital should be able to approve user appointments
+appointmentRouter.put(
+  "/approve/:id",
+  [useAuth, useCheckRole("hospital")],
+  AppointmentController.approveAppointment
+);
+
+//a user and an hospital should be able to delete appointments
 appointmentRouter.delete(
   "/:id",
   [useAuth],
