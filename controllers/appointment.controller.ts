@@ -3,6 +3,12 @@ import Joi from "joi";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { AuthRequest } from "../types/types";
+import {
+  formatDateTime,
+  parseHospitalEmailData,
+  parseUserEmailData,
+  sendEmail,
+} from "../utils";
 import { response } from "./../utils";
 
 class AppointmentController {
@@ -114,9 +120,9 @@ class AppointmentController {
     if (error) return response(res, 400, error.details[0].message);
 
     const { id: userId } = value;
-      const appointments = await Appointment.find({ userId })
-        .sort({ createdAt: -1 })
-        .exec();
+    const appointments = await Appointment.find({ userId })
+      .sort({ createdAt: -1 })
+      .exec();
     if (!appointments) return response(res, 404, "No appointments found");
     return response(
       res,
@@ -188,62 +194,62 @@ class AppointmentController {
     );
   }
 
-static async updateAppointment(req: Request, res: Response) {
-  const requestSchema = Joi.object({
-    title: Joi.string().max(50),
-    description: Joi.string().max(1000),
-    status: Joi.string().required(),
-    startDate: Joi.date().iso(),
-    endDate: Joi.date().iso(),
-  });
+  static async updateAppointment(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      title: Joi.string().max(50),
+      description: Joi.string().max(1000),
+      status: Joi.string().required(),
+      startDate: Joi.date().iso(),
+      endDate: Joi.date().iso(),
+    });
 
-  const { error: requestBodyError, value: requestBodyValue } =
-    requestSchema.validate(req.body);
-  if (requestBodyError)
-    return response(res, 400, requestBodyError.details[0].message);
+    const { error: requestBodyError, value: requestBodyValue } =
+      requestSchema.validate(req.body);
+    if (requestBodyError)
+      return response(res, 400, requestBodyError.details[0].message);
 
-  const requestIdSchema = Joi.object({
-    id: Joi.string().required(),
-  });
+    const requestIdSchema = Joi.object({
+      id: Joi.string().required(),
+    });
 
-  const { error: requestParamsError, value: requestParamsValue } =
-    requestIdSchema.validate(req.params);
-  if (requestParamsError)
-    return response(res, 400, requestParamsError.details[0].message);
+    const { error: requestParamsError, value: requestParamsValue } =
+      requestIdSchema.validate(req.params);
+    if (requestParamsError)
+      return response(res, 400, requestParamsError.details[0].message);
 
-  // Check if appointment with the given id exists
-  const { id } = requestParamsValue;
-  const existingAppointment = await Appointment.findById(id);
-  if (!existingAppointment)
-    return response(res, 404, "Appointment with given id not found");
+    // Check if appointment with the given id exists
+    const { id } = requestParamsValue;
+    const existingAppointment = await Appointment.findById(id);
+    if (!existingAppointment)
+      return response(res, 404, "Appointment with given id not found");
 
-  // Check for conflicts with existing appointments for the same hospital and time range
-  if (
-    requestBodyValue.startDate &&
-    requestBodyValue.endDate &&
-    requestBodyValue.startDate > requestBodyValue.endDate
-  ) {
+    // Check for conflicts with existing appointments for the same hospital and time range
+    if (
+      requestBodyValue.startDate &&
+      requestBodyValue.endDate &&
+      requestBodyValue.startDate > requestBodyValue.endDate
+    ) {
+      return response(
+        res,
+        400,
+        "End date cannot be earlier than the start date"
+      );
+    }
+
+    const options = { new: true, runValidators: true };
+    const updatedAppointment = await Appointment.findByIdAndUpdate(
+      id,
+      requestBodyValue,
+      options
+    );
+
     return response(
       res,
-      400,
-      "End date cannot be earlier than the start date"
+      200,
+      "Appointment updated successfully",
+      updatedAppointment
     );
   }
-
-  const options = { new: true, runValidators: true };
-  const updatedAppointment = await Appointment.findByIdAndUpdate(
-    id,
-    requestBodyValue,
-    options
-  );
-
-  return response(
-    res,
-    200,
-    "Appointment updated successfully",
-    updatedAppointment
-  );
-}
 
   static async cancelAppointment(req: Request, res: Response) {
     const requestSchema = Joi.object({
@@ -254,30 +260,138 @@ static async updateAppointment(req: Request, res: Response) {
     if (error) return response(res, 400, error.details[0].message);
 
     const appointment = await Appointment.findById(value.id);
-    if (!appointment) return response(res, 404, "Appointment with given id not found!");
+    if (!appointment)
+      return response(res, 404, "Appointment with given id not found!");
 
-    if (appointment.status === "failed") return response(res, 400, "Appointment is already cancelled!");
+    if (appointment.status === "failed")
+      return response(res, 400, "Appointment is already cancelled!");
 
     appointment.status = "failed";
 
     const cancelledAppointment = await appointment.save();
 
-    return response(res, 200, "Appointment cancelled successfully", cancelledAppointment);
-    
+    return response(
+      res,
+      200,
+      "Appointment cancelled successfully",
+      cancelledAppointment
+    );
   }
-  
 
   static async approveAppointment(req: Request, res: Response) {
     const requestSchema = Joi.object({
       id: Joi.string().required(),
     });
+
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
+    //check if the appointment exists
     const appointment = await Appointment.findById(value.id);
-    if (!appointment) return response(res, 404, "Appointment with given id not found!");
+    if (!appointment)
+      return response(res, 404, "Appointment with given id not found!");
 
-    if (appointment.status === "failed") return response(res, 400, "Appointment is already cancelled");
+    if (appointment.status === "failed")
+      return response(res, 400, "Appointment is already cancelled");
+    const currentTime = new Date();
+    const appointmentStartDate = appointment.startDate;
+
+    //if appointment start date and time has passed,
+    if (appointmentStartDate < currentTime) {
+      return response(res, 400, "Appointment has expired!");
+    }
+
+
+    const hospital = await Hospital.findById(appointment.hospitalId);
+    const user = await User.findById(appointment.userId);
+
+    //check if the user and the hospital exists
+    if (user && hospital) {
+      const userEmail = user.email;
+      const hospitalEmail = hospital.email;
+      const startFormattedTime = formatDateTime(appointment.startDate);
+      const endFormattedTime = formatDateTime(appointment.endDate);
+
+      const meetingLink =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:3000/user/appointments/${appointment._id}/start`
+          : `https://getcaresync.vercel.app/user/appointments/${appointment._id}/start`;
+
+      const rescheduleLink =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:3000/user/appointments/${appointment._id}`
+          : `https://getcaresync.vercel.app/user/appointments/${appointment._id}`;
+
+      const hospitalMeetingLink =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:3000/hospital/appointments/${appointment._id}/start`
+          : `https://getcaresync.vercel.app/hospital/appointments/${appointment._id}/start`;
+
+      const hospitalRescheduleLink =
+        process.env.NODE_ENV === "development"
+          ? `http://localhost:3000/hospital/appointments/${appointment._id}`
+          : `https://getcaresync.vercel.app/hospital/appointments/${appointment._id}`;
+
+      const userEmailContent = parseUserEmailData(
+        user.name,
+        hospital.clinicName,
+        appointment.title,
+        appointment.description,
+        startFormattedTime,
+        endFormattedTime,
+        meetingLink,
+        rescheduleLink
+      );
+
+      const hospitalEmailContent = parseHospitalEmailData(
+        user.name,
+        hospital.clinicName,
+        appointment.title,
+        appointment.description,
+        startFormattedTime,
+        endFormattedTime,
+        hospitalMeetingLink,
+        hospitalRescheduleLink
+      );
+
+      const hospitalMailResponse = await sendEmail(
+        "Appointment Approved",
+        hospitalEmailContent,
+        hospitalEmail
+      );
+
+      const userMailResponse = await sendEmail(
+        "Appointment Approved",
+        userEmailContent,
+        userEmail
+      );
+
+      if (!hospitalMailResponse || !userMailResponse) {
+        // a very bad error occured probably SMTP issues
+        appointment.status = "failed";
+        await appointment.save();
+        return response(res, 400, "An error occured while sending email");
+      } else {
+        //everything is fine
+        appointment.status = "success";
+        const approvedAppointment = await appointment.save();
+
+        return response(
+          res,
+          200,
+          "Appointment approved successfully",
+          approvedAppointment
+        );
+      }
+    } else {
+      appointment.status = "failed";
+      await appointment.save();
+      return response(
+        res,
+        404,
+        "Appointment failed, user or hospital not found!"
+      );
+    }
   }
 
   static async deleteAppointment(req: Request, res: Response) {
