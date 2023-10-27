@@ -85,16 +85,18 @@ class AppointmentController {
     }
   }
 
-  static async getAllAppointments(req: Request, res: Response) {
-    const allAppointments = await Appointment.find();
+ static async getAllAppointments(req: Request, res: Response) {
+  const allAppointments = await Appointment.find()
+    .sort({ updatedAt: -1 })
 
-    return response(
-      res,
-      200,
-      "Appointments fetched successfully",
-      allAppointments
-    );
-  }
+  return response(
+    res,
+    200,
+    "Appointments fetched successfully",
+    allAppointments
+  );
+}
+
 
   static async getAppointmentById(req: Request, res: Response) {
     const requestSchema = Joi.object({
@@ -179,7 +181,7 @@ class AppointmentController {
     const filter = userType === "user" ? { userId: id } : { hospitalId: id };
 
     const latestAppointments = await Appointment.find(filter)
-      .sort({ startDate: -1 })
+      .sort({ startDate: -1, updatedAt: -1 })
       .limit(limit);
 
     if (!latestAppointments.length) {
