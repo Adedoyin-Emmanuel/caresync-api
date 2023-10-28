@@ -85,18 +85,16 @@ class AppointmentController {
     }
   }
 
- static async getAllAppointments(req: Request, res: Response) {
-  const allAppointments = await Appointment.find()
-    .sort({ updatedAt: -1 })
+  static async getAllAppointments(req: Request, res: Response) {
+    const allAppointments = await Appointment.find();
 
-  return response(
-    res,
-    200,
-    "Appointments fetched successfully",
-    allAppointments
-  );
-}
-
+    return response(
+      res,
+      200,
+      "Appointments fetched successfully",
+      allAppointments
+    );
+  }
 
   static async getAppointmentById(req: Request, res: Response) {
     const requestSchema = Joi.object({
@@ -106,7 +104,10 @@ class AppointmentController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
-    const appointment = await Appointment.findById(value.id);
+    const appointment = await Appointment.findById(value.id).sort({
+      updatedAt: -1,
+    });
+
     if (!appointment)
       return response(res, 404, "Appointment with given id not found");
 
@@ -225,6 +226,10 @@ class AppointmentController {
     if (!existingAppointment)
       return response(res, 404, "Appointment with given id not found");
 
+    //check the status of the appointment
+    if (existingAppointment.status === "failed") {
+      return response(res, 400, "Appointment has been cancelled!");
+    }
     // Check for conflicts with existing appointments for the same hospital and time range
     if (
       requestBodyValue.startDate &&
@@ -302,7 +307,6 @@ class AppointmentController {
     if (appointmentStartDate < currentTime) {
       return response(res, 400, "Appointment has expired!");
     }
-
 
     const hospital = await Hospital.findById(appointment.hospitalId);
     const user = await User.findById(appointment.userId);
