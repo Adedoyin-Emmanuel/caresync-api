@@ -30,9 +30,10 @@ appointmentRouter.get(
   AppointmentController.getAppointmentById
 );
 
+//only a user should be able to update an appointment
 appointmentRouter.put(
   "/:id",
-  [useAuth],
+  [useAuth, useCheckRole("user")],
   AppointmentController.updateAppointment
 );
 

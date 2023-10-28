@@ -228,7 +228,11 @@ class AppointmentController {
 
     //check the status of the appointment
     if (existingAppointment.status === "failed") {
-      return response(res, 400, "Appointment has been cancelled!");
+      return response(
+        res,
+        400,
+        "You cannot update an appointment that has already been cancelled!"
+      );
     }
     // Check for conflicts with existing appointments for the same hospital and time range
     if (
