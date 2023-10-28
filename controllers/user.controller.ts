@@ -15,10 +15,8 @@ class UserController {
     });
 
     const { error, value } = validationSchema.validate(req.body);
-   
-    
+
     if (error) return response(res, 400, error.details[0].message);
-    
 
     //check if email has been taken by another user
     const { email: emailTaken, username: usernameTaken } = value;
@@ -46,7 +44,7 @@ class UserController {
     };
 
     const user = await User.create(valuesToStore);
-   // console.log(user);
+    // console.log(user);
     const filteredUser = _.pick(user, [
       "name",
       "username",
@@ -60,7 +58,6 @@ class UserController {
 
   static async getAllUsers(req: Request | any, res: Response) {
     const allUsers = await User.find();
-
 
     return response(res, 200, "Users fetched successfully", allUsers);
   }
@@ -81,8 +78,32 @@ class UserController {
 
   static async getMe(req: AuthRequest | any, res: Response) {
     const user = await User.findById(req.user._id);
-   if (!user) return response(res, 404, "User with given id not found");
+    if (!user) return response(res, 404, "User with given id not found");
     return response(res, 200, "User info fetched successfully", user);
+  }
+
+  static async searchUser(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      searchTerm: Joi.string().required(),
+    });
+    const { error, value } = requestSchema.validate(req.query);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { searchTerm } = value;
+
+    const user = await User.find({
+      $or: [
+        { name: { $regex: searchTerm, $options: "i" } },
+        { username: { $regex: searchTerm, $options: "i" } },
+      ],
+    });
+
+    if (user.length == 0)
+      return response(res, 404, "No users found", []);
+
+    if (!user) return response(res, 400, "Couldn't get user");
+
+    return response(res, 200, "User fetched successfully", user);
   }
 
   static async updateUser(req: Request, res: Response) {
@@ -91,7 +112,7 @@ class UserController {
       username: Joi.string().required().max(20),
       bio: Joi.string().required().max(500),
       email: Joi.string().required().email(),
-      location: Joi.string().required().max(50)
+      location: Joi.string().required().max(50),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =
