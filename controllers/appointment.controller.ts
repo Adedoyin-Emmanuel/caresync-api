@@ -425,7 +425,7 @@ class AppointmentController {
         $pull: { appointments: deletedAppointment._id },
       });
 
-      return response(res, 200, "Hospital deleted successfully");
+      return response(res, 200, "Appointment deleted successfully");
     } catch (error) {
       return response(
         res,
