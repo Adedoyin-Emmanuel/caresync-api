@@ -14,7 +14,7 @@ hospitalRouter.get("/", [useAuth], HospitalController.getAllHospitals);
 hospitalRouter.get("/:id", [useAuth], HospitalController.getHospitalById);
 hospitalRouter.get("/rating/:id", HospitalController.getHospitalAverageRating);
 hospitalRouter.put(
-  "/",
+  "/:id",
   [useAuth, useCheckRole("hospital")],
   HospitalController.updateHospital
 );
