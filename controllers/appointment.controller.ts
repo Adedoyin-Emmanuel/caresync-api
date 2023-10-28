@@ -276,7 +276,12 @@ class AppointmentController {
 
     if (appointment.status === "failed")
       return response(res, 400, "Appointment is already cancelled!");
-
+    if (appointment.status === "success")
+      return response(
+        res,
+        400,
+        "Cannot cancel an alrady approved appointment."
+      );
     appointment.status = "failed";
 
     const cancelledAppointment = await appointment.save();
