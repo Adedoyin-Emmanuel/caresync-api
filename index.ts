@@ -14,6 +14,8 @@ import {
   userRouter,
 } from "./routes";
 import { connectToDb } from "./utils";
+import http from 'http';
+import { initSocket } from "./sockets/socket.server";
 dotenv.config();
 
 const allowedOrigins = [
@@ -24,6 +26,8 @@ const allowedOrigins = [
 
 const PORT = process.env.PORT || 2800;
 const app = express();
+const server = http.createServer(app);
+initSocket(server);
 
 //middlewares
 app.use(
@@ -54,7 +58,7 @@ app.use("/api/review", reviewRouter);
 app.use(useNotFound);
 app.use(useErrorHandler);
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectToDb();
 });
