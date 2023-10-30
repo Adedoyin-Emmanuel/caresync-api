@@ -29,6 +29,7 @@ const app = express();
 const server = http.createServer(app);
 initSocket(server);
 
+
 //middlewares
 app.use(
   cors({
@@ -39,7 +40,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, 
+    credentials: true,
   })
 );
 app.use(cookieParser());
@@ -57,6 +58,8 @@ app.use("/api/review", reviewRouter);
 
 app.use(useNotFound);
 app.use(useErrorHandler);
+
+
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

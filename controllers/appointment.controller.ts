@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
+import { io } from "../sockets/socket.server";
 import { AuthRequest } from "../types/types";
 import {
   formatDateTime,
@@ -69,6 +70,9 @@ class AppointmentController {
         { new: true }
       );
 
+      //emit a newAppointment event
+      io.emit("newAppointment", appointment);
+      console.log("Event emmitted successfully");
       return response(
         res,
         201,
@@ -147,7 +151,9 @@ class AppointmentController {
     if (error) return response(res, 400, error.details[0].message);
 
     const { id: hospitalId } = value;
-    const appointments = await Appointment.find({ hospitalId });
+    const appointments = await Appointment.find({ hospitalId })
+      .sort({ createdAt: -1 })
+      .exec();
     if (!appointments) return response(res, 404, "No appointments found");
     return response(
       res,
