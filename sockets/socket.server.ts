@@ -24,9 +24,15 @@ const initSocket = (server: http.Server) => {
       io.emit("updateAppointment", data);
     });
 
+    socket.on("cancelAppointment", (data) => {
+      io.emit("canceAppointment", data);
+    })
+
     socket.on("disconnect", () => {
       console.log("A user disconnected");
-    });
+    }); 
+
+
   });
 };
 

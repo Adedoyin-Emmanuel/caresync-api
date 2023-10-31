@@ -72,7 +72,7 @@ class AppointmentController {
 
       //emit a newAppointment event
       io.emit("newAppointment", appointment);
-     
+
       return response(
         res,
         201,
@@ -295,6 +295,8 @@ class AppointmentController {
 
     const cancelledAppointment = await appointment.save();
 
+    //emit an event to cancel the appointment
+    io.emit("cancelAppointment", cancelledAppointment);
     return response(
       res,
       200,
