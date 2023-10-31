@@ -20,6 +20,10 @@ const initSocket = (server: http.Server) => {
       io.emit("newAppointment", data);
     });
 
+    socket.on("updateAppointment", (data) => {
+      io.emit("updateAppointment", data);
+    });
+
     socket.on("disconnect", () => {
       console.log("A user disconnected");
     });

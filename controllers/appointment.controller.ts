@@ -72,7 +72,7 @@ class AppointmentController {
 
       //emit a newAppointment event
       io.emit("newAppointment", appointment);
-      console.log("Event emmitted successfully");
+     
       return response(
         res,
         201,
@@ -259,6 +259,9 @@ class AppointmentController {
       requestBodyValue,
       options
     );
+
+    //emit an updateAppointment event
+    io.emit("updateAppointment", updatedAppointment);
 
     return response(
       res,
