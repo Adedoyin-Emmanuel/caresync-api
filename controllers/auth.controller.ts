@@ -212,7 +212,8 @@ class AuthController {
     }
   }
 
-  static async sendEmailToken(req: AuthRequest | any, res: Response) {
+  static async sendEmailToken(req: any , res: Response) {
+   
     const userType = req.userType;
     let defaultName = "Caresync";
 
@@ -230,7 +231,7 @@ class AuthController {
       email: Joi.string().required().email(),
     });
 
-    const { error, value } = requestSchema.validate(req.body);
+    const { error, value } = requestSchema.validate(req.query);
 
     if (error) return response(res, 400, error.details[0].message);
     const { email } = value;
@@ -250,7 +251,7 @@ class AuthController {
         process.env.NODE_ENV === "development"
           ? "http://localhost:2800"
           : req.hostname;
-      console.log(process.env.NODE_ENV);
+     
       const domain = `${serverURL}/api/auth/confirm-email?token=${verifyEmailToken}&userType=${userType}`;
 
       const data = `
