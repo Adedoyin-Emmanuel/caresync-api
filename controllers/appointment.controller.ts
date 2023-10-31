@@ -297,6 +297,7 @@ class AppointmentController {
 
     //emit an event to cancel the appointment
     io.emit("cancelAppointment", cancelledAppointment);
+    console.log(cancelledAppointment);
     return response(
       res,
       200,
@@ -401,7 +402,8 @@ class AppointmentController {
         //everything is fine
         appointment.status = "success";
         const approvedAppointment = await appointment.save();
-
+        
+        io.emit("approveAppointment", approvedAppointment);
         return response(
           res,
           200,
@@ -440,7 +442,9 @@ class AppointmentController {
       await Hospital.findByIdAndUpdate(deletedAppointment.hospitalId, {
         $pull: { appointments: deletedAppointment._id },
       });
-
+      console.log(deletedAppointment);
+      //emit a delete event
+      io.emit("deleteAppointment", deletedAppointment);
       return response(res, 200, "Appointment deleted successfully");
     } catch (error) {
       return response(
