@@ -27,7 +27,7 @@ authRouter.get(
   [useAuth, useVerifyLimiter, useVerifySlowDown],
   AuthController.sendEmailToken
 );
-authRouter.get(
+authRouter.get( 
   "/confirm-email",
   [useVerifyLimiter, useVerifySlowDown],
   AuthController.verifyEmailToken
