@@ -107,7 +107,8 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       required: false,
       select: false,
-    },
+    }, 
+    
     appointments: [
       {
         type: mongoose.Schema.Types.ObjectId,
