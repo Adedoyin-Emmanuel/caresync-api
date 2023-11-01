@@ -27,6 +27,18 @@ appointmentRouter.get(
   AppointmentController.generateAppointmentToken
 );
 
+appointmentRouter.post(
+  "/room",
+  [useAuth],
+  AppointmentController.createAppointmentRoom
+);
+
+appointmentRouter.delete(
+  "/room",
+  [useAuth],
+  AppointmentController.deleteAppointmentRoom
+);
+
 appointmentRouter.get(
   "/hospital/:id",
   AppointmentController.getAppointmentByHospitalId
