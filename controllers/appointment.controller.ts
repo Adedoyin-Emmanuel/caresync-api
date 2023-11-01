@@ -211,19 +211,21 @@ class AppointmentController {
       roomName: Joi.string().required(),
     });
 
-    const { error, value } = requestSchema.validate(req.params);
+    const { error, value } = requestSchema.validate(req.query);
 
     if (error) return response(res, 400, error.details[0].message);
 
     const { participantName, roomName } = value;
     const API_KEY = process.env.LK_API_KEY;
     const SECRET_KEY = process.env.LK_API_SECRET;
+    console.log(API_KEY);
+    console.log(SECRET_KEY);
 
     const at = new AccessToken(API_KEY, SECRET_KEY, {
       identity: participantName,
     });
 
-    at.addGrant({ roomJoin: true, room: roomName });
+  at.addGrant({ roomJoin: true, room: roomName });
 
     return response(
       res,
@@ -237,7 +239,7 @@ class AppointmentController {
     const requestSchema = Joi.object({
       roomName: Joi.string().required(),
       maxParticipants: Joi.number().default(5),
-      timeout: Joi.number().required(),
+      timeout: Joi.number,
     });
 
     const { error, value } = requestSchema.validate(req.body);
@@ -245,7 +247,10 @@ class AppointmentController {
     if (error) return response(res, 400, error.details[0].message);
     const { roomName, maxParticipants, timeout } = value;
 
-    const liveKitHost = "https://my.livekit.host";
+    // wss://caresync-y6vac96e.livekit.cloud
+    //const PORT = process.env.PORT || 2800;
+    try {
+      const liveKitHost = "https://my.livekit.host";
     const API_KEY = process.env.LK_API_KEY;
     const SECRET_KEY = process.env.LK_API_SECRET;
     const roomService = new RoomServiceClient(liveKitHost, API_KEY, SECRET_KEY);
@@ -259,6 +264,10 @@ class AppointmentController {
     roomService.createRoom(options).then((room: Room) => {
       return response(res, 200, "Room created successfully", room);
     });
+    } catch (error) {
+      console.log(error);
+      return response(res, 500, `An error occured when creating room ${error}`);
+  }
   }
 
   static async deleteAppointmentRoom(req: Request, res: Response) {
