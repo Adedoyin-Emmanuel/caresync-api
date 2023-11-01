@@ -212,8 +212,7 @@ class AuthController {
     }
   }
 
-  static async sendEmailToken(req: any , res: Response) {
-   
+  static async sendEmailToken(req: any, res: Response) {
     const userType = req.userType;
     let defaultName = "Caresync";
 
@@ -251,7 +250,7 @@ class AuthController {
         process.env.NODE_ENV === "development"
           ? "http://localhost:2800"
           : req.hostname;
-     
+
       const domain = `${serverURL}/api/auth/confirm-email?token=${verifyEmailToken}&userType=${userType}`;
 
       const data = `
@@ -352,12 +351,16 @@ class AuthController {
       const user = await User.findOne({
         verifyEmailToken,
         verifyEmailTokenExpire: { $gt: Date.now() },
-      }).select("+verifyEmailToken +verifyEmailTokenExpire");
+      });
 
       if (!user) {
-        return res.redirect(
-          redirectURL + "?success=false&message=Invalid or expired token!"
-        );
+        console.log(user);
+        return res
+          .status(400)
+          .redirect(
+            redirectURL +
+              "?success=false&message=Invalid or expired token!&userType=user"
+          );
       }
 
       user.verifyEmailToken = undefined;
@@ -366,19 +369,25 @@ class AuthController {
 
       await user.save();
 
-      return res.redirect(
-        redirectURL + "?success=true&message=User email verified successfully"
-      );
+      return res
+        .status(200)
+        .redirect(
+          redirectURL +
+            "?success=true&message=User email verified successfully&userType=user"
+        );
     } else if (userType == "hospital") {
       const hospital = await Hospital.findOne({
         verifyEmailToken,
         verifyEmailTokenExpire: { $gt: Date.now() },
-      }).select("+verifyEmailToken +verifyEmailTokenExpire");
+      });
 
       if (!hospital) {
-        return res.redirect(
-          redirectURL + "?success=false&message=Invalid or expired token!"
-        );
+        return res
+          .status(400)
+          .redirect(
+            redirectURL +
+              "?success=false&message=Invalid or expired token!&userType=hospital"
+          );
       }
 
       hospital.verifyEmailToken = undefined;
@@ -387,14 +396,19 @@ class AuthController {
 
       await hospital.save();
 
-      return res.redirect(
-        redirectURL +
-          "?success=true&message=Hospital email verified successfully"
-      );
+      return res
+        .status(200)
+        .redirect(
+          redirectURL +
+            "?success=true&message=Hospital email verified successfully&userType=hospital"
+        );
     } else {
-      return res.redirect(
-        redirectURL + "?success=false&message=No valid user type, please login!"
-      );
+      return res
+        .status(400)
+        .redirect(
+          redirectURL +
+            "?success=false&message=No valid user type, please login!"
+        );
     }
   }
 
