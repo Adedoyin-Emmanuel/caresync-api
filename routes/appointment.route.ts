@@ -58,4 +58,8 @@ appointmentRouter.delete(
   AppointmentController.deleteAppointment
 );
 
+
+//get the appointment token
+appointmentRouter.get("/generate-token", [useAuth]);
+
 export default appointmentRouter;

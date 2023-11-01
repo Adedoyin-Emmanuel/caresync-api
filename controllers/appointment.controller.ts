@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Joi from "joi";
+import { AccessToken } from "livekit-server-sdk";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { io } from "../sockets/socket.server";
@@ -200,6 +201,34 @@ class AppointmentController {
       200,
       "Latest appointments fetched successfully",
       latestAppointments
+    );
+  }
+
+  static async generateAppointmentToken(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      participantName: Joi.string().required(),
+      roomName: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { participantName, roomName } = value;
+    const API_KEY = process.env.LK_API_KEY;
+    const SECRET_KEY = process.env.LK_API_SECRET;
+
+    const at = new AccessToken(API_KEY, SECRET_KEY, {
+      identity: participantName,
+    });
+
+    at.addGrant({ roomJoin: true, room: roomName });
+
+    return response(
+      res,
+      200,
+      "Appointment token generated successfully",
+      at.toJwt()
     );
   }
 
