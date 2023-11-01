@@ -33,7 +33,7 @@ authRouter.get(
   AuthController.verifyEmailToken
 );
 
-authRouter.get(
+authRouter.post(
   "/forgot-password",
   [useVerifyLimiter, useVerifySlowDown],
   AuthController.forgotPassword

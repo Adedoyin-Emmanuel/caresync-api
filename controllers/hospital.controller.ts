@@ -93,7 +93,6 @@ class HospitalController {
   }
 
   static async getMe(req: AuthRequest | any, res: Response) {
-    console.log(req.hospital);
     const hospital = await Hospital.findById(req.hospital._id);
     if (!hospital)
       return response(res, 404, "Hospital with given id not found");

@@ -44,7 +44,6 @@ class UserController {
     };
 
     const user = await User.create(valuesToStore);
-    // console.log(user);
     const filteredUser = _.pick(user, [
       "name",
       "username",
