@@ -20,6 +20,13 @@ appointmentRouter.get(
   AppointmentController.getAppointmentByUserId
 );
 
+//get the appointment token
+appointmentRouter.get(
+  "/generate-token",
+  [useAuth],
+  AppointmentController.generateAppointmentToken
+);
+
 appointmentRouter.get(
   "/hospital/:id",
   AppointmentController.getAppointmentByHospitalId
@@ -57,9 +64,5 @@ appointmentRouter.delete(
   [useAuth],
   AppointmentController.deleteAppointment
 );
-
-
-//get the appointment token
-appointmentRouter.get("/generate-token", [useAuth]);
 
 export default appointmentRouter;
