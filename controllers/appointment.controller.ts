@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Joi from "joi";
-import { AccessToken } from "livekit-server-sdk";
+import { AccessToken, Room, RoomServiceClient } from "livekit-server-sdk";
+
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { io } from "../sockets/socket.server";
@@ -230,6 +231,52 @@ class AppointmentController {
       "Appointment token generated successfully",
       at.toJwt()
     );
+  }
+
+  static async createAppointmentRoom(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      roomName: Joi.string().required(),
+      maxParticipants: Joi.number().default(5),
+      timeout: Joi.number().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.body);
+
+    if (error) return response(res, 400, error.details[0].message);
+    const { roomName, maxParticipants, timeout } = value;
+
+    const liveKitHost = "https://my.livekit.host";
+    const API_KEY = process.env.LK_API_KEY;
+    const SECRET_KEY = process.env.LK_API_SECRET;
+    const roomService = new RoomServiceClient(liveKitHost, API_KEY, SECRET_KEY);
+
+    const options = {
+      name: roomName,
+      emptyTimeout: timeout,
+      maxParticipants: maxParticipants,
+    };
+
+    roomService.createRoom(options).then((room: Room) => {
+      return response(res, 200, "Room created successfully", room);
+    });
+  }
+
+  static async deleteAppointmentRoom(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      roomName: Joi.string().required(),
+    });
+    const { error, value } = requestSchema.validate(req.body);
+
+    if (error) return response(res, 400, error.details[0].message);
+
+    const liveKitHost = "https://my.livekit.host";
+    const API_KEY = process.env.LK_API_KEY;
+    const SECRET_KEY = process.env.LK_API_SECRET;
+    const roomService = new RoomServiceClient(liveKitHost, API_KEY, SECRET_KEY);
+
+    await roomService.deleteRoom(value.roomName).then(() => {
+      return response(res, 200, "Appointment room deleted successfully");
+    });
   }
 
   static async updateAppointment(req: Request, res: Response) {
