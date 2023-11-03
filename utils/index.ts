@@ -1,5 +1,5 @@
 import connectToDb from "./connectToDb";
-import { formatDateTime } from "./date";
+import { formatDateTime, toJavaScriptDate } from "./date";
 import response from "./response";
 import sendEmail, {
   parseHospitalEmailData,
@@ -15,4 +15,5 @@ export {
   parseUserEmailData,
   response,
   sendEmail,
+  toJavaScriptDate,
 };
