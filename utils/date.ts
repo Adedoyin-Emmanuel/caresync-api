@@ -51,3 +51,11 @@ export function formatDateTime(dateTimeString: Date) {
     ampm,
   };
 }
+
+
+export function toJavaScriptDate(mongodbTimestamp: any) {
+  // Parse the MongoDB timestamp into a JavaScript Date object.
+  const date = new Date(mongodbTimestamp);
+
+  return date;
+}

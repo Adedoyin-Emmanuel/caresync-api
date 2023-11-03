@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import Joi from "joi";
 import { AccessToken, Room, RoomServiceClient } from "livekit-server-sdk";
-
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { io } from "../sockets/socket.server";
@@ -11,6 +10,7 @@ import {
   parseHospitalEmailData,
   parseUserEmailData,
   sendEmail,
+  toJavaScriptDate
 } from "../utils";
 import { response } from "./../utils";
 
@@ -354,7 +354,7 @@ class AppointmentController {
     if (appointment.status === "failed")
       return response(res, 400, "Appointment is already cancelled");
     const currentTime = new Date();
-    const appointmentStartDate = appointment.startDate;
+    const appointmentStartDate = toJavaScriptDate(appointment.startDate);
 
     //if appointment start date and time has passed,
     if (appointmentStartDate < currentTime) {
