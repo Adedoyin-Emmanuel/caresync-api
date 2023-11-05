@@ -8,6 +8,7 @@ import Hospital, { IHospital } from "../models/hospital.model";
 import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
 import { generateLongToken, response, sendEmail } from "./../utils";
+import { io } from "../sockets/socket.server";
 
 class AuthController {
   static async login(req: Request, res: Response) {
@@ -74,6 +75,8 @@ class AuthController {
 
       const dataToClient = { accessToken, ...filteredUser };
 
+      io.emit("userLogin", filteredUser);
+
       return response(res, 200, "Login successful", dataToClient);
     } else {
       const hospital: IHospital | any = await Hospital.findOne({
@@ -119,6 +122,8 @@ class AuthController {
       ]);
 
       const dataToClient = { accessToken, ...filteredHospital };
+
+      io.emit("userLogin", filteredHospital);
 
       return response(res, 200, "Login successful", dataToClient);
     }
