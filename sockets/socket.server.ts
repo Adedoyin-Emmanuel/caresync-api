@@ -52,7 +52,14 @@ const initSocket = (server: http.Server) => {
         io.emit("userLogout", data);
       }
     );
-    
+
+    socket.on("onlineUsers", (data)=>{
+      io.emit("onlineUsers", data);
+    });
+
+    socket.on("onlineHospitals", (data)=>{
+      io.emit("onlineHospitals", data);
+    })
 
 
     socket.on("newMessage", (data) => {

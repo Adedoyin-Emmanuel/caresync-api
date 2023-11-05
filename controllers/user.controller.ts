@@ -5,6 +5,9 @@ import * as _ from "lodash";
 import User from "../models/user.model";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
+import { io } from "../sockets/socket.server";
+
+
 class UserController {
   static async createUser(req: Request, res: Response) {
     const validationSchema = Joi.object({
@@ -79,6 +82,19 @@ class UserController {
     const user = await User.findById(req.user._id);
     if (!user) return response(res, 404, "User with given id not found");
     return response(res, 200, "User info fetched successfully", user);
+  }
+
+  static async getOnlineUsers(req: Request, res: Response){
+    const onlineUsers = await User.find({online: true});
+
+    if(!onlineUsers){
+      io.emit("onlineUsers", []);
+      return response(res, 404, "No user online", []);
+    }
+
+
+    io.emit("onlineUsers", onlineUsers);
+    return response(res, 200, "Online users fetched successfully", onlineUsers);
   }
 
   static async searchUser(req: Request, res: Response) {

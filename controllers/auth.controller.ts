@@ -9,7 +9,6 @@ import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
 import { generateLongToken, response, sendEmail } from "./../utils";
 import { io } from "../sockets/socket.server";
-import { listenerCount } from "process";
 
 class AuthController {
   static async login(req: Request, res: Response) {
