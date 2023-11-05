@@ -20,6 +20,7 @@ export interface IUser extends mongoose.Document {
   healthCareHistory: mongoose.Types.ObjectId[];
   allTotalAppointments?: number;
   location?: string;
+  online?: boolean;
 
   generateAccessToken(): string;
   generateRefreshToken(): string;
@@ -89,6 +90,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: false,
       select: false,
+    },
+
+    online:{
+      type: Boolean,
+      required: false,
+      default: false
     },
 
     verifyEmailTokenExpire: {

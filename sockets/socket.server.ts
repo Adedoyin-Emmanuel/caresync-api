@@ -46,16 +46,21 @@ const initSocket = (server: http.Server) => {
       io.emit("userLogin", data);
     });
 
-
-    socket.on("hospitalLogin", (data)=>{
-      io.emit("hospitalLogin", data);
-    });
-
+    socket.on(
+      "userLogout",
+      (data) => {
+        io.emit("userLogout", data);
+      }
+    );
+    
 
 
     socket.on("newMessage", (data) => {
       io.emit("newMessage", data);
     });
+
+
+
 
     socket.on("joinRoom", (data)=>{
 
@@ -63,7 +68,7 @@ const initSocket = (server: http.Server) => {
       console.log(data);
 
 
-      socket.broadcast.to(user.room).emit("message", "A user has joined the chat");
+  socket.broadcast.to(user.room).emit("message", "A user has joined the chat");
 
 
 

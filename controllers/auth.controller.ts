@@ -40,7 +40,7 @@ class AuthController {
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
 
-      await User.findOneAndUpdate({ email }, { token: refreshToken });
+      await User.findOneAndUpdate({ email }, { token: refreshToken, online: true });
 
       //update the headers
       res.header("X-Auth-Access-Token", accessToken);
@@ -91,7 +91,7 @@ class AuthController {
       const accessToken = hospital.generateAccessToken();
       const refreshToken = hospital.generateRefreshToken();
 
-      await Hospital.findOneAndUpdate({ email }, { token: refreshToken });
+      await Hospital.findOneAndUpdate({ email }, { token: refreshToken, online: true});
       res.header("X-Auth-Access-Token", accessToken);
       res.header("X-Auth-Refresh-Token", refreshToken);
 
@@ -595,9 +595,24 @@ class AuthController {
     }
   }
 
-  static async logout(req: Request, res: Response) {
+  static async logout(req: AuthRequest | any, res: Response) {
+  switch(req.userType){
+    case "user":
+        const userId= req.user._id;
+        const user:any = await User.findByIdAndUpdate({_id: userId}, {online: false});
+        await user.save();
+
+        break;
+        case "hospital":
+          const hospitalId= req.hospital._id;
+          const hospital:any = await Hospital.findByIdAndUpdate({_id: hospitalId}, {online: false});
+          await hospital.save();
+  
+          break;
+  }
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
+    io.emit("userLogout", {});
     return response(res, 200, "Logout successful!");
   }
 }
