@@ -71,6 +71,7 @@ class AuthController {
         "profilePicture",
         "createdAt",
         "updatedAt",
+        "online"
       ]);
 
       const dataToClient = { accessToken, ...filteredUser };
@@ -119,6 +120,7 @@ class AuthController {
         "profilePicture",
         "createdAt",
         "updatedAt",
+        "online"
       ]);
 
       const dataToClient = { accessToken, ...filteredHospital };
