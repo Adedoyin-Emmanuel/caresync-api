@@ -9,6 +9,7 @@ import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
 import { generateLongToken, response, sendEmail } from "./../utils";
 import { io } from "../sockets/socket.server";
+import { listenerCount } from "process";
 
 class AuthController {
   static async login(req: Request, res: Response) {
@@ -26,7 +27,7 @@ class AuthController {
       return response(res, 400, "Invalid user type");
 
     if (userType == "user") {
-      const user: IUser | any = await User.findOne({ email }).select(
+      let user: IUser | any = await User.findOne({ email }).select(
         "+password"
       );
 
@@ -39,8 +40,11 @@ class AuthController {
 
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
+      const options = { new: true, runValidators: true };
 
-      await User.findOneAndUpdate({ email }, { token: refreshToken, online: true });
+      user = await User.findOneAndUpdate({ email }, { token: refreshToken, online: true }, options);
+      await user.save();
+      
 
       //update the headers
       res.header("X-Auth-Access-Token", accessToken);
@@ -80,7 +84,7 @@ class AuthController {
 
       return response(res, 200, "Login successful", dataToClient);
     } else {
-      const hospital: IHospital | any = await Hospital.findOne({
+      let hospital: IHospital | any = await Hospital.findOne({
         email,
       }).select("+password");
 
@@ -91,8 +95,14 @@ class AuthController {
 
       const accessToken = hospital.generateAccessToken();
       const refreshToken = hospital.generateRefreshToken();
+      const options = { new: true, runValidators: true };
 
-      await Hospital.findOneAndUpdate({ email }, { token: refreshToken, online: true});
+
+      hospital = await Hospital.findOneAndUpdate({ email }, { token: refreshToken, online: true}, options);
+
+      await hospital.save();
+
+
       res.header("X-Auth-Access-Token", accessToken);
       res.header("X-Auth-Refresh-Token", refreshToken);
 
