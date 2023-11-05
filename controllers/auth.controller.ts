@@ -8,6 +8,9 @@ import Hospital, { IHospital } from "../models/hospital.model";
 import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
 import { generateLongToken, response, sendEmail } from "./../utils";
+import { io } from "../sockets/socket.server";
+import HospitalController from "./hospital.controller";
+import UserController from "./user.controller";
 
 class AuthController {
   static async login(req: Request, res: Response) {
@@ -25,7 +28,7 @@ class AuthController {
       return response(res, 400, "Invalid user type");
 
     if (userType == "user") {
-      const user: IUser | any = await User.findOne({ email }).select(
+      let user: IUser | any = await User.findOne({ email }).select(
         "+password"
       );
 
@@ -38,8 +41,11 @@ class AuthController {
 
       const accessToken = user.generateAccessToken();
       const refreshToken = user.generateRefreshToken();
+      const options = { new: true, runValidators: true };
 
-      await User.findOneAndUpdate({ email }, { token: refreshToken });
+      user = await User.findOneAndUpdate({ email }, { token: refreshToken, online: true }, options);
+      await user.save();
+      
 
       //update the headers
       res.header("X-Auth-Access-Token", accessToken);
@@ -70,13 +76,27 @@ class AuthController {
         "profilePicture",
         "createdAt",
         "updatedAt",
+        "online"
       ]);
 
       const dataToClient = { accessToken, ...filteredUser };
 
+
+      //actually we want to emit all online hospitals
+      const onlineUsers = await UserController.returnOnlineUsers(req, res);
+      io.emit("userLogin", filteredUser);
+
+      if(onlineUsers.length === 0){
+
+        io.emit("onlineUsers", []);
+      }
+      io.emit("onlineUsers", onlineUsers);
+
+      
+
       return response(res, 200, "Login successful", dataToClient);
     } else {
-      const hospital: IHospital | any = await Hospital.findOne({
+      let hospital: IHospital | any = await Hospital.findOne({
         email,
       }).select("+password");
 
@@ -87,8 +107,14 @@ class AuthController {
 
       const accessToken = hospital.generateAccessToken();
       const refreshToken = hospital.generateRefreshToken();
+      const options = { new: true, runValidators: true };
 
-      await Hospital.findOneAndUpdate({ email }, { token: refreshToken });
+
+      hospital = await Hospital.findOneAndUpdate({ email }, { token: refreshToken, online: true}, options);
+
+      await hospital.save();
+
+
       res.header("X-Auth-Access-Token", accessToken);
       res.header("X-Auth-Refresh-Token", refreshToken);
 
@@ -116,10 +142,22 @@ class AuthController {
         "profilePicture",
         "createdAt",
         "updatedAt",
+        "online"
       ]);
 
       const dataToClient = { accessToken, ...filteredHospital };
 
+
+      //actually we want to emit all online hospitals
+      const onlineHospitals = await HospitalController.returnOnlineHospitals(req, res);
+      io.emit("userLogin", filteredHospital);
+
+      if(onlineHospitals.length === 0){
+      io.emit("onlineHospitals", []);
+
+      }
+
+      io.emit("onlineHospitals", onlineHospitals);
       return response(res, 200, "Login successful", dataToClient);
     }
   }
@@ -590,9 +628,27 @@ class AuthController {
     }
   }
 
-  static async logout(req: Request, res: Response) {
+  static async logout(req: AuthRequest | any, res: Response) {
+  switch(req.userType){
+    case "user":
+        const userId= req.user._id;
+        const user:any = await User.findByIdAndUpdate({_id: userId}, {online: false});
+        await user.save();
+        io.emit("onlineUsers", []);
+
+        break;
+        case "hospital":
+          const hospitalId= req.hospital._id;
+          const hospital:any = await Hospital.findByIdAndUpdate({_id: hospitalId}, {online: false});
+          await hospital.save();
+          io.emit("onlineHospitals", []);
+
+  
+          break;
+  }
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
+    io.emit("userLogout", {});
     return response(res, 200, "Logout successful!");
   }
 }

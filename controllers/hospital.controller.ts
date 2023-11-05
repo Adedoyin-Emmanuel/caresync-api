@@ -6,6 +6,7 @@ import { Review } from "../models";
 import Hospital from "../models/hospital.model";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
+import { io } from "../sockets/socket.server";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -97,6 +98,33 @@ class HospitalController {
     if (!hospital)
       return response(res, 404, "Hospital with given id not found");
     return response(res, 200, "Hospital info fetched successfully", hospital);
+  }
+
+
+
+  static async getOnlineHospitals(req: Request, res: Response){
+    const onlineHosptials = await Hospital.find({online: true});
+
+    if(!onlineHosptials){
+      io.emit("onlineHospitals", []);
+      return response(res, 404, "No hospital online", []);
+    }
+
+
+    io.emit("onlineHospitals", onlineHosptials);
+    return response(res, 200, "Online hospitals fetched successfully", onlineHosptials);
+  }
+
+
+  static async returnOnlineHospitals(req: Request, res: Response){
+    const onlineHosptials = await Hospital.find({online: true});
+
+    if(!onlineHosptials){
+      return [];
+    }
+
+
+    return onlineHosptials;
   }
 
   static async getHospitalById(req: Request, res: Response) {

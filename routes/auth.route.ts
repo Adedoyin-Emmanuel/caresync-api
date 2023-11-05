@@ -18,7 +18,7 @@ authRouter.post(
   AuthController.login
 );
 
-authRouter.post("/logout", AuthController.logout);
+authRouter.post("/logout", [useAuth], AuthController.logout);
 authRouter.post("/refresh-token", AuthController.generateRefreshToken);
 
 //MISC

@@ -19,6 +19,7 @@ export interface IHospital extends mongoose.Document {
   reviews: mongoose.Types.ObjectId[];
   healthCareHistory: mongoose.Types.ObjectId[];
   location?: string;
+  online?: boolean;
 
   allTotalAppointments?: number;
 
@@ -94,6 +95,13 @@ const HospitalSchema = new mongoose.Schema(
       type: String,
       required: false,
       select: false,
+    },
+
+
+    online:{
+      type: Boolean,
+      required: false,
+      default: false
     },
 
     verifyEmailTokenExpire: {

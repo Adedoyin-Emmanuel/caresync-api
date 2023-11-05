@@ -10,6 +10,7 @@ hospitalRouter.post(
 );
 hospitalRouter.get("/me", [useAuth], HospitalController.getMe);
 hospitalRouter.get("/search", HospitalController.searchHospital);
+hospitalRouter.get("/online", HospitalController.getOnlineHospitals);
 hospitalRouter.get("/", [useAuth], HospitalController.getAllHospitals);
 hospitalRouter.get("/:id", [useAuth], HospitalController.getHospitalById);
 hospitalRouter.get("/rating/:id", HospitalController.getHospitalAverageRating);

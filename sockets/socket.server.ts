@@ -16,6 +16,8 @@ const initSocket = (server: http.Server) => {
   io.on("connection", (socket) => {
     console.log("A user connected!");
 
+    /* Appointment events */
+
     socket.on("newAppointment", (data) => {
       io.emit("newAppointment", data);
     });
@@ -35,6 +37,65 @@ const initSocket = (server: http.Server) => {
     socket.on("approveAppointment", (data) => {
       io.emit("approveAppointment", data);
     });
+
+
+
+    /* Message Events*/
+
+    socket.on("userLogin", (data)=>{
+      io.emit("userLogin", data);
+    });
+
+    socket.on(
+      "userLogout",
+      (data) => {
+        io.emit("userLogout", data);
+      }
+    );
+
+    socket.on("onlineUsers", (data)=>{
+      io.emit("onlineUsers", data);
+    });
+
+    socket.on("onlineHospitals", (data)=>{
+      io.emit("onlineHospitals", data);
+    })
+
+
+    socket.on("newMessage", (data) => {
+      io.emit("newMessage", data);
+    });
+
+
+
+
+    socket.on("joinRoom", (data)=>{
+
+      const user:any = "";
+      console.log(data);
+
+
+  socket.broadcast.to(user.room).emit("message", "A user has joined the chat");
+
+
+
+      //send users and room info
+      io.to(user.room).emit("roomUsers", {
+        room: user.room,
+        // users: getRoomUsers(user.room),
+      });
+    });
+
+
+    socket.on("chatMessage", (data)=>{
+      // const user = getCurrentUser(socket.id);
+
+      console.log(data);
+
+      //io.to(user.room).emit("message", formatMessage(user.username, msg));
+    })
+
+
     
 
 
