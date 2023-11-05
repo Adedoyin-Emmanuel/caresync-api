@@ -115,6 +115,18 @@ class HospitalController {
     return response(res, 200, "Online hospitals fetched successfully", onlineHosptials);
   }
 
+
+  static async returnOnlineHospitals(req: Request, res: Response){
+    const onlineHosptials = await Hospital.find({online: true});
+
+    if(!onlineHosptials){
+      return [];
+    }
+
+
+    return onlineHosptials;
+  }
+
   static async getHospitalById(req: Request, res: Response) {
     const requestSchema = Joi.object({
       id: Joi.string().required(),

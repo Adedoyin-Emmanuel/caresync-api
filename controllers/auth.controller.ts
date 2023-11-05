@@ -9,6 +9,8 @@ import User, { IUser } from "../models/user.model";
 import { AuthRequest } from "../types/types";
 import { generateLongToken, response, sendEmail } from "./../utils";
 import { io } from "../sockets/socket.server";
+import HospitalController from "./hospital.controller";
+import UserController from "./user.controller";
 
 class AuthController {
   static async login(req: Request, res: Response) {
@@ -79,7 +81,18 @@ class AuthController {
 
       const dataToClient = { accessToken, ...filteredUser };
 
+
+      //actually we want to emit all online hospitals
+      const onlineUsers = await UserController.returnOnlineUsers(req, res);
       io.emit("userLogin", filteredUser);
+
+      if(onlineUsers.length === 0){
+
+        io.emit("onlineUsers", []);
+      }
+      io.emit("onlineUsers", onlineUsers);
+
+      
 
       return response(res, 200, "Login successful", dataToClient);
     } else {
@@ -134,8 +147,17 @@ class AuthController {
 
       const dataToClient = { accessToken, ...filteredHospital };
 
+
+      //actually we want to emit all online hospitals
+      const onlineHospitals = await HospitalController.returnOnlineHospitals(req, res);
       io.emit("userLogin", filteredHospital);
 
+      if(onlineHospitals.length === 0){
+      io.emit("onlineHospitals", []);
+
+      }
+
+      io.emit("onlineHospitals", onlineHospitals);
       return response(res, 200, "Login successful", dataToClient);
     }
   }
@@ -612,12 +634,15 @@ class AuthController {
         const userId= req.user._id;
         const user:any = await User.findByIdAndUpdate({_id: userId}, {online: false});
         await user.save();
+        io.emit("onlineUsers", []);
 
         break;
         case "hospital":
           const hospitalId= req.hospital._id;
           const hospital:any = await Hospital.findByIdAndUpdate({_id: hospitalId}, {online: false});
           await hospital.save();
+          io.emit("onlineHospitals", []);
+
   
           break;
   }

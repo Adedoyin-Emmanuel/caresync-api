@@ -97,6 +97,19 @@ class UserController {
     return response(res, 200, "Online users fetched successfully", onlineUsers);
   }
 
+
+  static async returnOnlineUsers(req: Request, res: Response){
+    const onlineUsers = await User.find({online: true});
+
+    if(!onlineUsers){
+      return [];
+    }
+
+
+    return onlineUsers;
+  }
+
+
   static async searchUser(req: Request, res: Response) {
     const requestSchema = Joi.object({
       searchTerm: Joi.string().required(),
