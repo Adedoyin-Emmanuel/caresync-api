@@ -16,10 +16,13 @@ const initSocket = (server: http.Server) => {
   io.on("connection", (socket) => {
     console.log("A user connected!");
 
+    const userId:any = socket.handshake.query.userId;
+
     /* Appointment events */
 
     socket.on("newAppointment", (data) => {
       io.emit("newAppointment", data);
+      console.log(userId);
     });
 
     socket.on("updateAppointment", (data) => {
