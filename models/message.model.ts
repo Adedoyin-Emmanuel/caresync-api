@@ -6,14 +6,18 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    roomId: {
+      type: String,
+      required: true,
+    },
     sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      role: String,
       required: true,
     },
     receiver: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Hospital",
+      role: String,
       required: true,
     },
   },
