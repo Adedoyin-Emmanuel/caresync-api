@@ -22,48 +22,48 @@ const initSocket = (server: http.Server) => {
     console.log(`${user?.username} connected`);
 
     /* Appointment events */
-    socket.on("newAppointment", (data) => {
+    socket.on("newAppointment", (data: any) => {
       io.emit("newAppointment", data);
     });
 
-    socket.on("updateAppointment", (data) => {
+    socket.on("updateAppointment", (data: any) => {
       io.emit("updateAppointment", data);
     });
 
-    socket.on("cancelAppointment", (data) => {
+    socket.on("cancelAppointment", (data: any) => {
       io.emit("canceAppointment", data);
     });
 
-    socket.on("deleteAppointment", (data) => {
+    socket.on("deleteAppointment", (data: any) => {
       io.emit("deleteAppointment", data);
     });
 
-    socket.on("approveAppointment", (data) => {
+    socket.on("approveAppointment", (data: any) => {
       io.emit("approveAppointment", data);
     });
 
     /* User Login Events*/
 
-    socket.on("userLogin", (data) => {
+    socket.on("userLogin", (data: any) => {
       io.emit("userLogin", data);
     });
 
-    socket.on("userLogout", (data) => {
+    socket.on("userLogout", (data: any) => {
       io.emit("userLogout", data);
     });
 
     /* User or Hospital online activity */
-    socket.on("onlineUsers", (data) => {
+    socket.on("onlineUsers", (data: any) => {
       io.emit("onlineUsers", data);
     });
 
-    socket.on("onlineHospitals", (data) => {
+    socket.on("onlineHospitals", (data: any) => {
       io.emit("onlineHospitals", data);
     });
 
     /* User or Hospital Chats */
 
-    socket.on("joinRoom", (data) => {
+    socket.on("joinRoom", (data: any) => {
       //fetch chat history
       try {
         const messages = Message.find({ roomId: data }).sort({ createdAt: 1 });
