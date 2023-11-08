@@ -1,5 +1,7 @@
 import http from "http";
 import { Server } from "socket.io";
+import { Message } from "../models";
+import { SocketMessage, GlobalUser } from "../types/types";
 
 let io: Server;
 
@@ -9,15 +11,17 @@ const initSocket = (server: http.Server) => {
   io = new Server(server, {
     cors: {
       origin: allowedOrigins,
-      credentials: true
+      credentials: true,
     },
   });
 
-  io.on("connection", (socket) => {
-    console.log("A user connected!");
+  io.on("connection", (socket: any) => {
+    // get the user or hospital details
+    const user: GlobalUser = socket.handshake.query.user;
+
+    console.log(`${user?.username} connected`);
 
     /* Appointment events */
-
     socket.on("newAppointment", (data) => {
       io.emit("newAppointment", data);
     });
@@ -38,72 +42,59 @@ const initSocket = (server: http.Server) => {
       io.emit("approveAppointment", data);
     });
 
+    /* User Login Events*/
 
-
-    /* Message Events*/
-
-    socket.on("userLogin", (data)=>{
+    socket.on("userLogin", (data) => {
       io.emit("userLogin", data);
     });
 
-    socket.on(
-      "userLogout",
-      (data) => {
-        io.emit("userLogout", data);
-      }
-    );
+    socket.on("userLogout", (data) => {
+      io.emit("userLogout", data);
+    });
 
-    socket.on("onlineUsers", (data)=>{
+    /* User or Hospital online activity */
+    socket.on("onlineUsers", (data) => {
       io.emit("onlineUsers", data);
     });
 
-    socket.on("onlineHospitals", (data)=>{
+    socket.on("onlineHospitals", (data) => {
       io.emit("onlineHospitals", data);
-    })
-
-
-    socket.on("newMessage", (data) => {
-      io.emit("newMessage", data);
     });
 
+    /* User or Hospital Chats */
 
+    socket.on("joinRoom", (data) => {
+      //fetch chat history
+      try {
+        const messages = Message.find({ roomId: data }).sort({ createdAt: 1 });
+        io.emit("chatHistory", messages);
+      } catch (error) {
+        console.log(error);
+      }
+    });
 
+    socket.on("sendMessage", async (data: SocketMessage) => {
+      /*
+       I'm expecting the following properties
+       message: string, sender: Id, receiver: Id, roomId: string
+      */
+      const { roomId } = data;
+      const savedMessage = await Message.create(data);
 
-    socket.on("joinRoom", (data)=>{
+      io.to(roomId).emit("newMessage", data);
+    });
 
-      const user:any = "";
-      console.log(data);
-
-
-  socket.broadcast.to(user.room).emit("message", "A user has joined the chat");
-
-
-
-      //send users and room info
-      io.to(user.room).emit("roomUsers", {
-        room: user.room,
-        // users: getRoomUsers(user.room),
+    socket.on("typing", (data: SocketMessage) => {
+      io.to(data.roomId).emit("typing", {
+        sender: data.sender,
+        receiver: data.receiver,
+        message: `${user?.username} is typing...`,
       });
     });
 
-
-    socket.on("chatMessage", (data)=>{
-      // const user = getCurrentUser(socket.id);
-
-      console.log(data);
-
-      //io.to(user.room).emit("message", formatMessage(user.username, msg));
-    })
-
-
-    
-
-
     socket.on("disconnect", () => {
-      console.log("A user disconnected");
-    }); 
-
-
+      console.log(`${user?.username} disconnected`);
+    });
   });
 };
 

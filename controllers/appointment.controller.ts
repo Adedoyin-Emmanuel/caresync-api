@@ -74,7 +74,6 @@ class AppointmentController {
 
       //emit a newAppointment event
       io.emit("newAppointment", appointment);
-
       return response(
         res,
         201,

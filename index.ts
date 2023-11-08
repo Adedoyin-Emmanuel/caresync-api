@@ -12,6 +12,7 @@ import {
   hospitalRouter,
   reviewRouter,
   userRouter,
+  roomRouter
 } from "./routes";
 import { connectToDb } from "./utils";
 import http from 'http';
@@ -55,6 +56,7 @@ app.use("/api/user", userRouter);
 app.use("/api/hospital", hospitalRouter);
 app.use("/api/appointment", appointmentRouter);
 app.use("/api/review", reviewRouter);
+app.unsubscribe("/api/room", roomRouter);
 
 app.use(useNotFound);
 app.use(useErrorHandler);
