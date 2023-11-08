@@ -17,8 +17,7 @@ const initSocket = (server: http.Server) => {
 
   io.on("connection", (socket: any) => {
     // get the user or hospital details
-    const user: GlobalUser = socket.handshake.query.user;
-
+    const user: GlobalUser = socket.handshake.query;
     console.log(`${user?.username} connected`);
 
     /* Appointment events */
@@ -93,7 +92,7 @@ const initSocket = (server: http.Server) => {
     });
 
     socket.on("disconnect", () => {
-      console.log(`${user?.username} disconnected`);
+     console.log(`${user?.username} disconnected`);
     });
   });
 };
