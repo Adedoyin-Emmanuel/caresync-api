@@ -14,6 +14,15 @@ interface Hospital {
   clinicName: String;
 }
 
+export type GlobalUser = User | Hospital | undefined;
+
+export interface SocketMessage{
+  roomId: string;
+  sender: string;
+  receiver: string;
+  message: string;
+}
+
 
 export interface HospitalJWTPayload extends Request {
   hospital: Hospital | any;
