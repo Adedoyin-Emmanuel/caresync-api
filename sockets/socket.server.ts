@@ -62,15 +62,21 @@ const initSocket = (server: http.Server) => {
 
     /* User or Hospital Chats */
 
-    socket.on("joinRoom", (data: any) => {
-      //fetch chat history
-      try {
-        const messages = Message.find({ roomId: data }).sort({ createdAt: 1 });
+  socket.on("joinRoom", async (data: any) => {
+    try {
+      const messages = await Message.find({ roomId: data }).sort({
+        createdAt: 1,
+      });
+
+      if (messages.length === 0) {
+        io.emit("chatHistory", []);
+      } else {
         io.emit("chatHistory", messages);
-      } catch (error) {
-        console.log(error);
       }
-    });
+    } catch (error) {
+      console.error(error);
+    }
+  });
 
     socket.on("sendMessage", async (data: SocketMessage) => {
       /*
