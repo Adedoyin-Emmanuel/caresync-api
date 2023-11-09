@@ -62,26 +62,26 @@ const initSocket = (server: http.Server) => {
 
     /* User or Hospital Chats */
 
-  socket.on("joinRoom", async (data: any) => {
-    try {
-      const messages = await Message.find({ roomId: data }).sort({
-        createdAt: 1,
-      });
+    socket.on("joinRoom", async (data: any) => {
+      try {
+        const messages = await Message.find({ roomId: data }).sort({
+          createdAt: 1,
+        });
 
-      if (messages.length === 0) {
-        io.emit("chatHistory", []);
-      } else {
-        io.emit("chatHistory", messages);
+        if (messages.length === 0) {
+          io.emit("chatHistory", []);
+        } else {
+          io.emit("chatHistory", messages);
+        }
+
+        //join the room
+
+        console.log(`${data} has been created`);
+        socket.join(data);
+      } catch (error) {
+        console.error(error);
       }
-
-      //join the room
-
-      console.log(`${data} has been created`);
-      socket.join(data)
-    } catch (error) {
-      console.error(error);
-    }
-  });
+    });
 
     socket.on("sendMessage", async (data: SocketMessage) => {
       /*
@@ -96,8 +96,8 @@ const initSocket = (server: http.Server) => {
 
     socket.on("typing", (data: SocketMessage) => {
       const roomId = data.roomId!;
-
-      io.to(roomId).emit("responseTyping", {
+      
+      socket.broadcast.to(roomId).emit("responseTyping", {
         sender: data.sender,
         receiver: data.receiver,
         message: `${user?.username} is typing...`,
@@ -105,7 +105,7 @@ const initSocket = (server: http.Server) => {
     });
 
     socket.on("disconnect", () => {
-     console.log(`${user?.username} disconnected`);
+      console.log(`${user?.username} disconnected`);
     });
   });
 };
