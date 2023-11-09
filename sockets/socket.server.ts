@@ -15,9 +15,9 @@ const initSocket = (server: http.Server) => {
     },
   });
 
-  io.on("connection", (socket: any) => {
+  io.on("connection", (socket) => {
     // get the user or hospital details
-    const user: GlobalUser = socket.handshake.query;
+    const user: GlobalUser | any = socket?.handshake.query!;
     console.log(`${user?.username} connected`);
 
     /* Appointment events */
@@ -73,6 +73,11 @@ const initSocket = (server: http.Server) => {
       } else {
         io.emit("chatHistory", messages);
       }
+
+      //join the room
+
+      console.log(`${data} has been created`);
+      socket.join(data)
     } catch (error) {
       console.error(error);
     }
@@ -86,11 +91,13 @@ const initSocket = (server: http.Server) => {
       const { roomId } = data;
       const savedMessage = await Message.create(data);
 
-      io.to(roomId).emit("newMessage", data);
+      io.to(roomId!).emit("newMessage", data);
     });
 
     socket.on("typing", (data: SocketMessage) => {
-      io.to(data.roomId).emit("typing", {
+      const roomId = data.roomId!;
+
+      io.to(roomId).emit("responseTyping", {
         sender: data.sender,
         receiver: data.receiver,
         message: `${user?.username} is typing...`,

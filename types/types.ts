@@ -17,10 +17,10 @@ interface Hospital {
 export type GlobalUser = User | Hospital | undefined;
 
 export interface SocketMessage{
-  roomId: string;
-  sender: string;
-  receiver: string;
-  message: string;
+  roomId?: string;
+  sender?: string;
+  receiver?: string;
+  message?: string;
 }
 
 
