@@ -3,31 +3,33 @@ import { Request, Response } from "express";
 import { response } from "./../utils";
 import { AuthRequest } from "../types/types";
 
+class RoomController {
+  static async getRoomToken(req: AuthRequest | any, res: Response) {
+    const requestSchema = Joi.object({
+      userId: Joi.string().required(),
+      hospitalId: Joi.string().required(),
+    });
 
+    const { error, value } = requestSchema.validate(req.query);
+    if (error) return response(res, 400, error.details[0].message);
 
-class RoomController{
-    static async getRoomToken(req: AuthRequest | any, res: Response) {
-        const requestSchema = Joi.object({
-            userId: Joi.string().required(),
-            hospitalId: Joi.string().required(),
-        });
+    const { userId, hospitalId } = value;
 
-        const { error, value } = requestSchema.validate(req.query);
-        if (error) return response(res, 400, error.details[0].message);
+    const roomId = `${userId}_${hospitalId}`;
 
-        const { userId, hospitalId } = value;
-        
+    //check if user or hospital is authorized
 
-        const roomId = `${userId}_${hospitalId}`;
-
-        //check if user or hospital is authorized
-        if(userId !== req?.user?._id || hospitalId !== req?.hospital?._id){
-            return response(res, 401, "You're not authorized to perform this action!");
-        } else {
-            return response(res, 200, "Room token generated successfully", {roomId});
-        }
+    if (
+      userId === req?.user?._id.toString() ||
+      hospitalId === req?.hospital?._id.toString()
+    ) {
+      return response(res, 200, "Room token generated successfully", {
+        roomId,
+      });
+    } else {
     }
+    return response(res, 401, "You're not authorized!");
+  }
 }
 
-
-export default RoomController
+export default RoomController;

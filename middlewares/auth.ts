@@ -6,7 +6,9 @@ const useAuth = (req: any, res: any, next: NextFunction) => {
   const tokenFromCookie = req.cookies.accessToken;
   const refreshTokenCookie = req.cookies.refreshToken;
 
-  //just in case of logout
+
+
+  //just in case of logout  
   if (!refreshTokenCookie) {
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
