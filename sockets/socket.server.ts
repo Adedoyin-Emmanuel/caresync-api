@@ -89,6 +89,8 @@ const initSocket = (server: http.Server) => {
        message: string, sender: Id, receiver: Id, roomId: string
       */
       const { roomId } = data;
+
+      //console.log(data);
       const savedMessage = await Message.create(data);
 
       io.to(roomId!).emit("newMessage", data);
@@ -96,7 +98,7 @@ const initSocket = (server: http.Server) => {
 
     socket.on("typing", (data: SocketMessage) => {
       const roomId = data.roomId!;
-      
+
       socket.broadcast.to(roomId).emit("responseTyping", {
         sender: data.sender,
         receiver: data.receiver,
