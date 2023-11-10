@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Joi from "joi";
-import { AccessToken, Room, RoomServiceClient } from "livekit-server-sdk";
+import { AccessToken, WebhookReceiver } from "livekit-server-sdk";
 import { Hospital, User } from "../models";
 import Appointment from "../models/appointment.model";
 import { io } from "../sockets/socket.server";
@@ -10,7 +10,7 @@ import {
   parseHospitalEmailData,
   parseUserEmailData,
   sendEmail,
-  toJavaScriptDate
+  toJavaScriptDate,
 } from "../utils";
 import { response } from "./../utils";
 
@@ -217,14 +217,12 @@ class AppointmentController {
     const { participantName, roomName } = value;
     const API_KEY = process.env.LK_API_KEY;
     const SECRET_KEY = process.env.LK_API_SECRET;
-    console.log(API_KEY);
-    console.log(SECRET_KEY);
 
     const at = new AccessToken(API_KEY, SECRET_KEY, {
       identity: participantName,
     });
 
-  at.addGrant({ roomJoin: true, room: roomName });
+    at.addGrant({ roomJoin: true, room: roomName });
 
     return response(
       res,
@@ -233,7 +231,6 @@ class AppointmentController {
       at.toJwt()
     );
   }
-
 
   static async updateAppointment(req: Request, res: Response) {
     const requestSchema = Joi.object({
@@ -451,6 +448,22 @@ class AppointmentController {
         "Appointment failed, user or hospital not found!"
       );
     }
+  }
+
+  static async getEvents(req: Request, res: Response) {
+    const API_KEY = process.env.LK_API_KEY;
+    const SECRET_KEY = process.env.LK_API_SECRET;
+    const receiver = new WebhookReceiver(API_KEY!, SECRET_KEY!);
+
+    const event = receiver.receive(req.body, req.get("Authorization"));
+    console.log(event);
+
+    return response(
+      res,
+      200,
+      "Appointment web hook received successfully",
+      event
+    );
   }
 
   static async deleteAppointment(req: Request, res: Response) {
