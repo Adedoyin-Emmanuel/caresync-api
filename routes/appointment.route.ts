@@ -3,6 +3,7 @@ import { AppointmentController } from "../controllers";
 import { useAuth, useCheckRole } from "./../middlewares";
 
 const appointmentRouter = express.Router();
+const rawWebhookMiddleware = express.raw({ type: "application/webhook+json" });
 
 appointmentRouter.post(
   "/",
@@ -26,7 +27,6 @@ appointmentRouter.get(
   [useAuth],
   AppointmentController.generateAppointmentToken
 );
-
 
 appointmentRouter.get(
   "/hospital/:id",
@@ -57,6 +57,14 @@ appointmentRouter.put(
   "/approve/:id",
   [useAuth, useCheckRole("hospital")],
   AppointmentController.approveAppointment
+);
+
+//web hooks
+
+appointmentRouter.post(
+  "/webhook",
+  [rawWebhookMiddleware],
+  AppointmentController.getEvents
 );
 
 //a user and an hospital should be able to delete appointments
