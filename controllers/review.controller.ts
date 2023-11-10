@@ -7,7 +7,7 @@ class ReviewController {
   static async createReview(req: Request, res: Response) {
     const requestSchema = Joi.object({
       message: Joi.string().required().max(1000),
-      rating: Joi.number().required().min(1).max(5),
+      rating: Joi.number().required().min(1).max(5).default(1),
       userId: Joi.string().required(),
       hospitalId: Joi.string().required(),
     });
@@ -32,7 +32,7 @@ class ReviewController {
         { new: true }
       );
 
-      return response(res, 201, "Review created successfully", review);
+      return response(res, 201, "Review submitted successfully", review);
     } catch (error) {
       console.log(error);
       return response(
