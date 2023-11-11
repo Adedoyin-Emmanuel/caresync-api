@@ -64,6 +64,48 @@ class ReviewController {
     return response(res, 200, "Review fetched successfully", review);
   }
 
+  static async getReviewByUserId(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      id: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { id: userId } = value;
+
+    const reviews = await Review.find({ userId })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    if (reviews.length == 0) {
+      return response(res, 404, "No reviews found", []);
+    }
+
+    return response(res, 200, "Reviews fetched successfully", reviews);
+  }
+
+  static async getReviewByHospitalId(req: Request, res: Response) {
+    const requestSchema = Joi.object({
+      id: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { id: hospitalId } = value;
+
+    const reviews = await Review.find({ hospitalId })
+      .sort({ createdAt: -1 })
+      .exec();
+
+    if (reviews.length == 0) {
+      return response(res, 404, "No reviews found");
+    }
+
+    return response(res, 200, "Reviews fetched successfully", reviews);
+  }
+
   static async updateReview(req: Request, res: Response) {
     const requestSchema = Joi.object({
       message: Joi.string().max(1000).required(),
@@ -117,11 +159,7 @@ class ReviewController {
 
       return response(res, 200, "Review deleted successfully");
     } catch (error) {
-      return response(
-        res,  
-        400,
-        "An error occured while deleting the review!"
-      );
+      return response(res, 400, "An error occured while deleting the review!");
     }
   }
 }

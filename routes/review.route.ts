@@ -10,11 +10,17 @@ reviewRouter.post(
 );
 reviewRouter.get("/", ReviewController.getAllReviews);
 reviewRouter.get("/:id", ReviewController.getReviewById);
+
+reviewRouter.get("/user/:id", ReviewController.getReviewByUserId);
+reviewRouter.get("/hospital/:id", ReviewController.getReviewByHospitalId);
+
+//only a user can update or delete a review
 reviewRouter.put(
   "/",
   [useAuth, useCheckRole("user")],
   ReviewController.updateReview
 );
+
 reviewRouter.delete(
   "/",
   [useAuth, useCheckRole("user")],
