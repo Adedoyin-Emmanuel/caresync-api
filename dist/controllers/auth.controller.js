@@ -81,14 +81,14 @@ class AuthController {
                 res.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: "strict",
+                    sameSite: "none",
                     maxAge: config_1.default.get("App.cookieAccessTokenExpiration"),
                     path: "/",
                 });
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: "strict",
+                    sameSite: "none",
                     maxAge: config_1.default.get("App.cookieRefreshTokenExpiration"),
                     path: "/",
                 });
@@ -131,14 +131,14 @@ class AuthController {
                 res.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: "strict",
+                    sameSite: "none",
                     maxAge: config_1.default.get("App.cookieAccessTokenExpiration"),
                     path: "/",
                 });
                 res.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: true,
-                    sameSite: "strict",
+                    sameSite: "none",
                     maxAge: config_1.default.get("App.cookieRefreshTokenExpiration"),
                     path: "/",
                 });
@@ -186,7 +186,7 @@ class AuthController {
                     res.cookie("accessToken", newAccessToken, {
                         httpOnly: true,
                         secure: true,
-                        sameSite: "strict",
+                        sameSite: "none",
                         maxAge: config_1.default.get("App.cookieAccessTokenExpiration"),
                         path: "/",
                     });
@@ -208,7 +208,7 @@ class AuthController {
                     res.cookie("accessToken", newAccessToken, {
                         httpOnly: true,
                         secure: true,
-                        sameSite: "strict",
+                        sameSite: "none",
                         maxAge: config_1.default.get("App.cookieAccessTokenExpiration"),
                         path: "/",
                     });
