@@ -66,6 +66,7 @@ class AuthController {
         sameSite: "none",
         maxAge: config.get("App.cookieRefreshTokenExpiration"),
         path: "/",
+        
       });
 
       const filteredUser = _.pick(user, [
