@@ -74,9 +74,11 @@ class ReviewController {
 
     const { id: userId } = value;
 
-    const reviews = Review.find({ userId }).sort({ createdAt: -1 }).exec();
+    const reviews = await Review.find({ userId })
+      .sort({ createdAt: -1 })
+      .exec();
 
-    if (!reviews) {
+    if (reviews.length == 0) {
       return response(res, 404, "No reviews found", []);
     }
 
@@ -93,10 +95,12 @@ class ReviewController {
 
     const { id: hospitalId } = value;
 
-    const reviews = Review.find({ hospitalId }).sort({ createdAt: -1 }).exec();
+    const reviews = await Review.find({ hospitalId })
+      .sort({ createdAt: -1 })
+      .exec();
 
-    if (!reviews) {
-      return response(res, 404, "No reviews found", []);
+    if (reviews.length == 0) {
+      return response(res, 404, "No reviews found");
     }
 
     return response(res, 200, "Reviews fetched successfully", reviews);
