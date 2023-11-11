@@ -55,7 +55,7 @@ class AuthController {
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: config.get("App.cookieAccessTokenExpiration"),
         path: "/",
       });
@@ -63,7 +63,7 @@ class AuthController {
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: config.get("App.cookieRefreshTokenExpiration"),
         path: "/",
       });
@@ -121,7 +121,7 @@ class AuthController {
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: config.get("App.cookieAccessTokenExpiration"),
         path: "/",
       });
@@ -129,7 +129,7 @@ class AuthController {
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
-        sameSite: "strict",
+        sameSite: "none",
         maxAge: config.get("App.cookieRefreshTokenExpiration"),
         path: "/",
       });
@@ -198,7 +198,7 @@ class AuthController {
         res.cookie("accessToken", newAccessToken, {
           httpOnly: true,
           secure: true,
-          sameSite: "strict",
+          sameSite: "none",
           maxAge: config.get("App.cookieAccessTokenExpiration"),
           path: "/",
         });
@@ -227,7 +227,7 @@ class AuthController {
         res.cookie("accessToken", newAccessToken, {
           httpOnly: true,
           secure: true,
-          sameSite: "strict",
+          sameSite: "none",
           maxAge: config.get("App.cookieAccessTokenExpiration"),
           path: "/",
         });
