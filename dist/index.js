@@ -23,6 +23,7 @@ const server = http_1.default.createServer(app);
 //middlewares
 const allowedOriginPatterns = [
     /https:\/\/getcaresync\.vercel\.app$/,
+    /https:\/\/caresync\.brimble\.app$/,
     /http:\/\/localhost:3000$/,
 ];
 const corsOptions = {
