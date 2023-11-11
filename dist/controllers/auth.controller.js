@@ -100,7 +100,7 @@ class AuthController {
                     "profilePicture",
                     "createdAt",
                     "updatedAt",
-                    "online"
+                    "online",
                 ]);
                 const dataToClient = Object.assign({ accessToken }, filteredUser);
                 //actually we want to emit all online hospitals
@@ -150,7 +150,7 @@ class AuthController {
                     "profilePicture",
                     "createdAt",
                     "updatedAt",
-                    "online"
+                    "online",
                 ]);
                 const dataToClient = Object.assign({ accessToken }, filteredHospital);
                 //actually we want to emit all online hospitals
@@ -337,7 +337,7 @@ class AuthController {
                 return (0, utils_1.response)(res, 400, error.details[0].message);
             const redirectURL = process.env.NODE_ENV === "development"
                 ? `http://localhost:3000/auth/verified`
-                : `https://getcaresync.vercel.app/auth/verified`;
+                : `https://caresync.brimble.app/auth/verified`;
             const { token, userType } = value;
             const verifyEmailToken = token;
             if (userType == "user") {
@@ -413,7 +413,7 @@ class AuthController {
                 yield user.save();
                 const clientDomain = process.env.NODE_ENV === "development"
                     ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
-                    : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
+                    : `https://caresync.brimble.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
                 const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       
@@ -453,7 +453,7 @@ class AuthController {
                 yield hospital.save();
                 const clientDomain = process.env.NODE_ENV === "development"
                     ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
-                    : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
+                    : `https://caresync.brimble.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
                 const data = `
                   <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
       

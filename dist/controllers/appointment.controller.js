@@ -262,16 +262,16 @@ class AppointmentController {
                 const endFormattedTime = (0, utils_1.formatDateTime)(appointment.endDate);
                 const meetingLink = process.env.NODE_ENV === "development"
                     ? `http://localhost:3000/user/appointments/${appointment._id}/start`
-                    : `https://getcaresync.vercel.app/user/appointments/${appointment._id}/start`;
+                    : `https://caresync.brimble.app/user/appointments/${appointment._id}/start`;
                 const rescheduleLink = process.env.NODE_ENV === "development"
                     ? `http://localhost:3000/user/appointments/${appointment._id}`
-                    : `https://getcaresync.vercel.app/user/appointments/${appointment._id}`;
+                    : `https://caresync.brimble.app/user/appointments/${appointment._id}`;
                 const hospitalMeetingLink = process.env.NODE_ENV === "development"
                     ? `http://localhost:3000/hospital/appointments/${appointment._id}/start`
-                    : `https://getcaresync.vercel.app/hospital/appointments/${appointment._id}/start`;
+                    : `https://caresync.brimble.app/hospital/appointments/${appointment._id}/start`;
                 const hospitalRescheduleLink = process.env.NODE_ENV === "development"
                     ? `http://localhost:3000/hospital/appointments/${appointment._id}`
-                    : `https://getcaresync.vercel.app/hospital/appointments/${appointment._id}`;
+                    : `https://caresync.brimble.app/hospital/appointments/${appointment._id}`;
                 const userEmailContent = (0, utils_1.parseUserEmailData)(user.name, hospital.clinicName, appointment.title, appointment.description, startFormattedTime, endFormattedTime, meetingLink, rescheduleLink);
                 const hospitalEmailContent = (0, utils_1.parseHospitalEmailData)(user.name, hospital.clinicName, appointment.title, appointment.description, startFormattedTime, endFormattedTime, hospitalMeetingLink, hospitalRescheduleLink);
                 const hospitalMailResponse = yield (0, utils_1.sendEmail)("Appointment Approved", hospitalEmailContent, hospitalEmail);
