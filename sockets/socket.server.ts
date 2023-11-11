@@ -6,7 +6,7 @@ import { SocketMessage, GlobalUser } from "../types/types";
 let io: Server;
 
 const initSocket = (server: http.Server) => {
-  const io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: (origin, callback) => {
         const allowedOriginPatterns = [
