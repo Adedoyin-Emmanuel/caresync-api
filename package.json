@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "check-lint": "eslint [0-9]*.ts",
-    "build": "rimraf ./build && tsc index.ts --esModuleInterop true --target ES6 --module nodenext --moduleResolution nodenext --outDir dist",
+    "build": "rimraf ./dist && tsc index.ts --esModuleInterop true --target ES6 --module nodenext --moduleResolution nodenext --outDir dist",
     "start": "npm run build && node ./dist/index.js",
     "dev": "nodemon index.ts",
     "test": "jest",
