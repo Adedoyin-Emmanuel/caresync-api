@@ -11,6 +11,7 @@ const initSocket = (server: http.Server) => {
       origin: (origin, callback) => {
         const allowedOriginPatterns = [
           /https:\/\/getcaresync\.vercel\.app$/,
+          /https:\/\/getcaresync\.netlify\.app$/,
           /https:\/\/caresync\.brimble\.app$/,
           /http:\/\/localhost:3000$/,
         ];
