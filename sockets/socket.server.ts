@@ -5,7 +5,10 @@ import { SocketMessage, GlobalUser } from "../types/types";
 
 let io: Server;
 
-const allowedOrigins = ["https://caresync.vercel.app", "http://localhost:3000"];
+const allowedOrigins = [
+  "https://getcaresync.vercel.app/",
+  "http://localhost:3000",
+];
 
 const initSocket = (server: http.Server) => {
   io = new Server(server, {

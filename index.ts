@@ -20,9 +20,8 @@ import { initSocket } from "./sockets/socket.server";
 dotenv.config();
 
 const allowedOrigins = [
-  "https://caresync.vercel.app",
+  "https://getcaresync.vercel.app/",
   "http://localhost:3000",
-  
 ];
 
 const PORT = process.env.PORT || 2800;

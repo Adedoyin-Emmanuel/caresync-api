@@ -17,7 +17,7 @@ const http_1 = __importDefault(require("http"));
 const socket_server_1 = require("./sockets/socket.server");
 dotenv_1.default.config();
 const allowedOrigins = [
-    "https://caresync.vercel.app",
+    "https://getcaresync.vercel.app/",
     "http://localhost:3000",
 ];
 const PORT = process.env.PORT || 2800;
