@@ -13,6 +13,6 @@ reviewRouter.get("/:id", controllers_1.ReviewController.getReviewById);
 reviewRouter.get("/user/:id", controllers_1.ReviewController.getReviewByUserId);
 reviewRouter.get("/hospital/:id", controllers_1.ReviewController.getReviewByHospitalId);
 //only a user can update or delete a review
-reviewRouter.put("/", [middlewares_1.useAuth, (0, middlewares_1.useCheckRole)("user")], controllers_1.ReviewController.updateReview);
-reviewRouter.delete("/", [middlewares_1.useAuth, (0, middlewares_1.useCheckRole)("user")], controllers_1.ReviewController.deleteReview);
+reviewRouter.put("/:id", [middlewares_1.useAuth, (0, middlewares_1.useCheckRole)("user")], controllers_1.ReviewController.updateReview);
+reviewRouter.delete("/:id", [middlewares_1.useAuth, (0, middlewares_1.useCheckRole)("user")], controllers_1.ReviewController.deleteReview);
 exports.default = reviewRouter;

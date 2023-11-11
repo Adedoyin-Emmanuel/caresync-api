@@ -16,13 +16,13 @@ reviewRouter.get("/hospital/:id", ReviewController.getReviewByHospitalId);
 
 //only a user can update or delete a review
 reviewRouter.put(
-  "/",
+  "/:id",
   [useAuth, useCheckRole("user")],
   ReviewController.updateReview
 );
 
 reviewRouter.delete(
-  "/",
+  "/:id",
   [useAuth, useCheckRole("user")],
   ReviewController.deleteReview
 );
