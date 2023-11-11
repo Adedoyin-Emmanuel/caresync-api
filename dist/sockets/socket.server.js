@@ -13,7 +13,10 @@ exports.io = exports.initSocket = void 0;
 const socket_io_1 = require("socket.io");
 const models_1 = require("../models");
 let io;
-const allowedOrigins = ["https://caresync.vercel.app", "http://localhost:3000"];
+const allowedOrigins = [
+    "https://getcaresync.vercel.app/",
+    "http://localhost:3000",
+];
 const initSocket = (server) => {
     exports.io = io = new socket_io_1.Server(server, {
         cors: {
