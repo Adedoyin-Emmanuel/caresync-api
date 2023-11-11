@@ -14,7 +14,7 @@ const socket_io_1 = require("socket.io");
 const models_1 = require("../models");
 let io;
 const initSocket = (server) => {
-    const io = new socket_io_1.Server(server, {
+    exports.io = io = new socket_io_1.Server(server, {
         cors: {
             origin: (origin, callback) => {
                 const allowedOriginPatterns = [
