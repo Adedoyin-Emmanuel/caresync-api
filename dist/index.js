@@ -16,18 +16,20 @@ const utils_1 = require("./utils");
 const http_1 = __importDefault(require("http"));
 const socket_server_1 = require("./sockets/socket.server");
 dotenv_1.default.config();
-const allowedOrigins = [
-    "https://getcaresync.vercel.app/",
-    "http://localhost:3000",
-];
 const PORT = process.env.PORT || 2800;
 const app = (0, express_1.default)();
 const server = http_1.default.createServer(app);
 (0, socket_server_1.initSocket)(server);
 //middlewares
-app.use((0, cors_1.default)({
+const allowedOriginPatterns = [
+    /https:\/\/getcaresync\.vercel\.app$/,
+    /http:\/\/localhost:3000$/,
+];
+const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Check if the origin matches any of the patterns
+        if (!origin ||
+            allowedOriginPatterns.some((pattern) => pattern.test(origin))) {
             callback(null, true);
         }
         else {
@@ -35,7 +37,8 @@ app.use((0, cors_1.default)({
         }
     },
     credentials: true,
-}));
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use((0, cookie_parser_1.default)());
 app.use(body_parser_1.default.json({ limit: "100mb" }));
 app.use((0, morgan_1.default)("dev"));

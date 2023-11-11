@@ -13,14 +13,23 @@ exports.io = exports.initSocket = void 0;
 const socket_io_1 = require("socket.io");
 const models_1 = require("../models");
 let io;
-const allowedOrigins = [
-    "https://getcaresync.vercel.app/",
-    "http://localhost:3000",
-];
 const initSocket = (server) => {
-    exports.io = io = new socket_io_1.Server(server, {
+    const io = new socket_io_1.Server(server, {
         cors: {
-            origin: allowedOrigins,
+            origin: (origin, callback) => {
+                const allowedOriginPatterns = [
+                    /https:\/\/getcaresync\.vercel\.app$/,
+                    /http:\/\/localhost:3000$/,
+                ];
+                // Check if the origin matches any of the patterns
+                if (!origin ||
+                    allowedOriginPatterns.some((pattern) => pattern.test(origin))) {
+                    callback(null, true);
+                }
+                else {
+                    callback(new Error("Not allowed by CORS"));
+                }
+            },
             credentials: true,
         },
     });
