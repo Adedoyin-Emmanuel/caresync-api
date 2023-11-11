@@ -28,9 +28,7 @@ class AuthController {
       return response(res, 400, "Invalid user type");
 
     if (userType == "user") {
-      let user: IUser | any = await User.findOne({ email }).select(
-        "+password"
-      );
+      let user: IUser | any = await User.findOne({ email }).select("+password");
 
       /*The email doesn't exist but we confuse the user to think it is an invalid, 
       just in case of an hacker trying to exploit 😂*/
@@ -43,9 +41,12 @@ class AuthController {
       const refreshToken = user.generateRefreshToken();
       const options = { new: true, runValidators: true };
 
-      user = await User.findOneAndUpdate({ email }, { token: refreshToken, online: true }, options);
+      user = await User.findOneAndUpdate(
+        { email },
+        { token: refreshToken, online: true },
+        options
+      );
       await user.save();
-      
 
       //update the headers
       res.header("X-Auth-Access-Token", accessToken);
@@ -66,7 +67,6 @@ class AuthController {
         sameSite: "none",
         maxAge: config.get("App.cookieRefreshTokenExpiration"),
         path: "/",
-        
       });
 
       const filteredUser = _.pick(user, [
@@ -77,23 +77,19 @@ class AuthController {
         "profilePicture",
         "createdAt",
         "updatedAt",
-        "online"
+        "online",
       ]);
 
       const dataToClient = { accessToken, ...filteredUser };
-
 
       //actually we want to emit all online hospitals
       const onlineUsers = await UserController.returnOnlineUsers(req, res);
       io.emit("userLogin", filteredUser);
 
-      if(onlineUsers.length === 0){
-
+      if (onlineUsers.length === 0) {
         io.emit("onlineUsers", []);
       }
       io.emit("onlineUsers", onlineUsers);
-
-      
 
       return response(res, 200, "Login successful", dataToClient);
     } else {
@@ -110,11 +106,13 @@ class AuthController {
       const refreshToken = hospital.generateRefreshToken();
       const options = { new: true, runValidators: true };
 
-
-      hospital = await Hospital.findOneAndUpdate({ email }, { token: refreshToken, online: true}, options);
+      hospital = await Hospital.findOneAndUpdate(
+        { email },
+        { token: refreshToken, online: true },
+        options
+      );
 
       await hospital.save();
-
 
       res.header("X-Auth-Access-Token", accessToken);
       res.header("X-Auth-Refresh-Token", refreshToken);
@@ -143,19 +141,20 @@ class AuthController {
         "profilePicture",
         "createdAt",
         "updatedAt",
-        "online"
+        "online",
       ]);
 
       const dataToClient = { accessToken, ...filteredHospital };
 
-
       //actually we want to emit all online hospitals
-      const onlineHospitals = await HospitalController.returnOnlineHospitals(req, res);
+      const onlineHospitals = await HospitalController.returnOnlineHospitals(
+        req,
+        res
+      );
       io.emit("userLogin", filteredHospital);
 
-      if(onlineHospitals.length === 0){
-      io.emit("onlineHospitals", []);
-
+      if (onlineHospitals.length === 0) {
+        io.emit("onlineHospitals", []);
       }
 
       io.emit("onlineHospitals", onlineHospitals);
@@ -381,7 +380,7 @@ class AuthController {
     const redirectURL =
       process.env.NODE_ENV === "development"
         ? `http://localhost:3000/auth/verified`
-        : `https://getcaresync.vercel.app/auth/verified`;
+        : `https://caresync.brimble.app/auth/verified`;
 
     const { token, userType } = value;
 
@@ -483,7 +482,7 @@ class AuthController {
       const clientDomain =
         process.env.NODE_ENV === "development"
           ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
-          : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
+          : `https://caresync.brimble.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -534,7 +533,7 @@ class AuthController {
       const clientDomain =
         process.env.NODE_ENV === "development"
           ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
-          : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
+          : `https://caresync.brimble.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
 
       const data = `
                   <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -630,23 +629,28 @@ class AuthController {
   }
 
   static async logout(req: AuthRequest | any, res: Response) {
-  switch(req.userType){
-    case "user":
-        const userId= req.user._id;
-        const user:any = await User.findByIdAndUpdate({_id: userId}, {online: false});
+    switch (req.userType) {
+      case "user":
+        const userId = req.user._id;
+        const user: any = await User.findByIdAndUpdate(
+          { _id: userId },
+          { online: false }
+        );
         await user.save();
         io.emit("onlineUsers", []);
 
         break;
-        case "hospital":
-          const hospitalId= req.hospital._id;
-          const hospital:any = await Hospital.findByIdAndUpdate({_id: hospitalId}, {online: false});
-          await hospital.save();
-          io.emit("onlineHospitals", []);
+      case "hospital":
+        const hospitalId = req.hospital._id;
+        const hospital: any = await Hospital.findByIdAndUpdate(
+          { _id: hospitalId },
+          { online: false }
+        );
+        await hospital.save();
+        io.emit("onlineHospitals", []);
 
-  
-          break;
-  }
+        break;
+    }
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
     io.emit("userLogout", {});
