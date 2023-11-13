@@ -80,7 +80,7 @@ class AuthController {
         "online",
       ]);
 
-      const dataToClient = { accessToken, ...filteredUser };
+      const dataToClient = { accessToken, refreshToken, ...filteredUser };
 
       //actually we want to emit all online hospitals
       const onlineUsers = await UserController.returnOnlineUsers(req, res);
@@ -144,7 +144,7 @@ class AuthController {
         "online",
       ]);
 
-      const dataToClient = { accessToken, ...filteredHospital };
+      const dataToClient = { accessToken, refreshToken, ...filteredHospital };
 
       //actually we want to emit all online hospitals
       const onlineHospitals = await HospitalController.returnOnlineHospitals(
