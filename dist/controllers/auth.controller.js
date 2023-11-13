@@ -102,7 +102,7 @@ class AuthController {
                     "updatedAt",
                     "online",
                 ]);
-                const dataToClient = Object.assign({ accessToken }, filteredUser);
+                const dataToClient = Object.assign({ accessToken, refreshToken }, filteredUser);
                 //actually we want to emit all online hospitals
                 const onlineUsers = yield user_controller_1.default.returnOnlineUsers(req, res);
                 socket_server_1.io.emit("userLogin", filteredUser);
@@ -152,7 +152,7 @@ class AuthController {
                     "updatedAt",
                     "online",
                 ]);
-                const dataToClient = Object.assign({ accessToken }, filteredHospital);
+                const dataToClient = Object.assign({ accessToken, refreshToken }, filteredHospital);
                 //actually we want to emit all online hospitals
                 const onlineHospitals = yield hospital_controller_1.default.returnOnlineHospitals(req, res);
                 socket_server_1.io.emit("userLogin", filteredHospital);
