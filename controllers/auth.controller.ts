@@ -380,7 +380,7 @@ class AuthController {
     const redirectURL =
       process.env.NODE_ENV === "development"
         ? `http://localhost:3000/auth/verified`
-        : `https://caresync.brimble.app/auth/verified`;
+        : `https://getcaresync.vercel.app/auth/verified`;
 
     const { token, userType } = value;
 
@@ -482,7 +482,7 @@ class AuthController {
       const clientDomain =
         process.env.NODE_ENV === "development"
           ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
-          : `https://caresync.brimble.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
+          : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
 
       const data = `
                 <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
@@ -533,7 +533,7 @@ class AuthController {
       const clientDomain =
         process.env.NODE_ENV === "development"
           ? `http://localhost:3000/auth/reset-password?token=${resetToken}&userType=${userType}`
-          : `https://caresync.brimble.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
+          : `https://getcaresync.vercel.app/auth/reset-password?token=${resetToken}&userType=${userType}`;
 
       const data = `
                   <div style="background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);">
