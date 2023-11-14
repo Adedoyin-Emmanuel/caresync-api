@@ -98,6 +98,15 @@ const initSocket = (server: http.Server) => {
       }
     });
 
+
+    //event to emit hospitals messaged recently
+    socket.on("getRecentHospitals", async (data: any) => {
+      
+    });
+
+    //event to emit users messaged recently
+    
+
     socket.on("sendMessage", async (data: SocketMessage) => {
       /*
        I'm expecting the following properties
