@@ -57,6 +57,18 @@ const initSocket = (server: http.Server) => {
       io.emit("approveAppointment", data);
     });
 
+    /* Review Events */
+    socket.on("newReview", (data: any) => {
+      io.emit("newReview", data);
+    });
+
+    socket.on("updateReview", (data: any) => {
+      io.emit("updateReview", data);
+    });
+    socket.on("deleteReview", (data: any) => {
+      io.emit("deleteReview", data);
+    });
+
     /* User Login Events*/
 
     socket.on("userLogin", (data: any) => {
@@ -148,6 +160,8 @@ const initSocket = (server: http.Server) => {
 
       io.to(hospitalId).emit("recentUsers", recentUsers);
     });
+
+    //event to emit reviews
 
     socket.on("sendMessage", async (data: SocketMessage) => {
       /*
