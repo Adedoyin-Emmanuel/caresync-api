@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import { Hospital, Review, User } from "../models";
 import { response } from "./../utils";
+import { io } from "../sockets/socket.server";
 
 class ReviewController {
   static async createReview(req: Request, res: Response) {
@@ -32,6 +33,8 @@ class ReviewController {
         { new: true }
       );
 
+      // emit the new review created
+      io.emit("newReview", review);
       return response(res, 201, "Review submitted successfully", review);
     } catch (error) {
       console.log(error);
@@ -132,6 +135,8 @@ class ReviewController {
     if (!updatedReview)
       return response(res, 404, "Review with given id not found!");
 
+    //emit the newly updated review
+    io.emit("updateReview", updatedReview);
     return response(res, 200, "Review updated successfully", updatedReview);
   }
 
@@ -157,6 +162,7 @@ class ReviewController {
         $pull: { reviews: deletedReview._id },
       });
 
+      io.emit("deleteReview", deletedReview);
       return response(res, 200, "Review deleted successfully");
     } catch (error) {
       return response(res, 400, "An error occured while deleting the review!");
