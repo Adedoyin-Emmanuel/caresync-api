@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const joi_1 = __importDefault(require("joi"));
 const models_1 = require("../models");
 const utils_1 = require("./../utils");
+const socket_server_1 = require("../sockets/socket.server");
 class ReviewController {
     static createReview(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -33,6 +34,8 @@ class ReviewController {
                 yield models_1.User.findByIdAndUpdate(value.userId, { $push: { reviews: review._id } }, { new: true });
                 // Update Hospital's Review
                 yield models_1.Hospital.findByIdAndUpdate(value.hospitalId, { $push: { reviews: review._id } }, { new: true });
+                // emit the new review created
+                socket_server_1.io.emit("newReview", review);
                 return (0, utils_1.response)(res, 201, "Review submitted successfully", review);
             }
             catch (error) {
@@ -115,6 +118,8 @@ class ReviewController {
             const updatedReview = yield models_1.Review.findByIdAndUpdate(requestParamsValue.id, value, { new: true });
             if (!updatedReview)
                 return (0, utils_1.response)(res, 404, "Review with given id not found!");
+            //emit the newly updated review
+            socket_server_1.io.emit("updateReview", updatedReview);
             return (0, utils_1.response)(res, 200, "Review updated successfully", updatedReview);
         });
     }
@@ -136,6 +141,7 @@ class ReviewController {
                 yield models_1.Hospital.findByIdAndUpdate(deletedReview.hospitalId, {
                     $pull: { reviews: deletedReview._id },
                 });
+                socket_server_1.io.emit("deleteReview", deletedReview);
                 return (0, utils_1.response)(res, 200, "Review deleted successfully");
             }
             catch (error) {
