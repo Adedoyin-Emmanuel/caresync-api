@@ -2,6 +2,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { Message } from "../models";
 import { SocketMessage, GlobalUser } from "../types/types";
+import { Hospital, User } from "../models";
 
 let io: Server;
 
@@ -56,6 +57,18 @@ const initSocket = (server: http.Server) => {
       io.emit("approveAppointment", data);
     });
 
+    /* Review Events */
+    socket.on("newReview", (data: any) => {
+      io.emit("newReview", data);
+    });
+
+    socket.on("updateReview", (data: any) => {
+      io.emit("updateReview", data);
+    });
+    socket.on("deleteReview", (data: any) => {
+      io.emit("deleteReview", data);
+    });
+
     /* User Login Events*/
 
     socket.on("userLogin", (data: any) => {
@@ -98,14 +111,57 @@ const initSocket = (server: http.Server) => {
       }
     });
 
-
     //event to emit hospitals messaged recently
     socket.on("getRecentHospitals", async (data: any) => {
-      
+      /* We want to emit the hosptitals that usERS messaged reccently */
+
+      const { userId } = data;
+
+      socket.join(userId);
+
+      const recentlyMessagedHospitals = await Message.aggregate([
+        { $match: { receiver: userId } },
+        { $sort: { createdAt: -1 } },
+        { $group: { _id: "$roomId", message: { $first: "$$ROOT" } } },
+        { $replaceRoot: { newRoot: "$message" } },
+      ]);
+
+      const receiverIds = recentlyMessagedHospitals.map(
+        (message) => message.receiver
+      );
+      const recentHospitals = await Hospital.find({
+        _id: { $in: receiverIds },
+      });
+
+      io.to(userId).emit("recentHospitals", recentHospitals);
+    });
+    //event to emit users messaged recently
+
+    socket.on("getRecentUsers", async (data: any) => {
+      /* We want to emit the hosptitals that usERS messaged reccently */
+
+      const { hospitalId } = data;
+
+      socket.join(hospitalId);
+
+      const recentlyMessagedUsers = await Message.aggregate([
+        { $match: { receiver: hospitalId } },
+        { $sort: { createdAt: -1 } },
+        { $group: { _id: "$roomId", message: { $first: "$$ROOT" } } },
+        { $replaceRoot: { newRoot: "$message" } },
+      ]);
+
+      const receiverIds = recentlyMessagedUsers.map(
+        (message) => message.receiver
+      );
+      const recentUsers = await User.find({
+        _id: { $in: receiverIds },
+      });
+
+      io.to(hospitalId).emit("recentUsers", recentUsers);
     });
 
-    //event to emit users messaged recently
-    
+    //event to emit reviews
 
     socket.on("sendMessage", async (data: SocketMessage) => {
       /*
