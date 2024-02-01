@@ -20,7 +20,7 @@ import { initSocket } from "./sockets/socket.server";
 dotenv.config();
 
 const PORT = process.env.PORT || 2800;
-export const app = express();
+const app = express();
 const server = http.createServer(app)
 initSocket(server);
 
@@ -70,3 +70,5 @@ server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   connectToDb();
 });
+
+export default app;
