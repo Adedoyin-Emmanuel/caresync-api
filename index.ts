@@ -20,7 +20,7 @@ import { initSocket } from "./sockets/socket.server";
 dotenv.config();
 
 const PORT = process.env.PORT || 2800;
-const app = express();
+export const app = express();
 const server = http.createServer(app)
 initSocket(server);
 
