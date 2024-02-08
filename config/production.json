@@ -1,0 +1,12 @@
+{
+  "App": {
+    "request-limit": 200,
+    "tokenExpiration": "1hr",
+    "refreshTokenExpiration": "7d",
+    "login-request-limit": 100,
+    "verify-user-request-limit": 5,
+    "create-request-limit": 100,
+    "cookieAccessTokenExpiration": 3600000,
+    "cookieRefreshTokenExpiration": 604800000
+  }
+}

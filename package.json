@@ -2,7 +2,8 @@
   "name": "CareSync",
   "version": "1.0.0",
   "description": "",
-  "main": "./index.ts",
+  "main": "./dist/index.js",
+  "type": "module",
   "scripts": {
     "lint": "eslint .",
     "check-lint": "eslint [0-9]*.ts",
@@ -11,8 +12,7 @@
     "dev": "nodemon index.ts",
     "test": "jest",
     "full-test": "eslint */[0-9]*.ts && jest --watchAll --verbose",
-    "full-test-fix": "eslint */[0-9]*.ts --fix && jest --watchAll --verbose",
-    "vercel-build": "echo API Deployed Successfully"
+    "full-test-fix": "eslint */[0-9]*.ts --fix && jest --watchAll --verbose"
   },
   "proxy": true,
   "keywords": [],

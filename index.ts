@@ -20,8 +20,8 @@ import { initSocket } from "./sockets/socket.server";
 dotenv.config();
 
 const PORT = process.env.PORT || 2800;
-export const app = express();
-const server = http.createServer(app)
+const app = express();
+const server = http.createServer(app);
 initSocket(server);
 
 //middlewares
