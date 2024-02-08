@@ -12,7 +12,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = exports.initSocket = void 0;
 const socket_io_1 = require("socket.io");
 const models_1 = require("../models");
-const models_2 = require("../models");
 let io;
 const initSocket = (server) => {
     exports.io = io = new socket_io_1.Server(server, {
@@ -56,16 +55,6 @@ const initSocket = (server) => {
         socket.on("approveAppointment", (data) => {
             io.emit("approveAppointment", data);
         });
-        /* Review Events */
-        socket.on("newReview", (data) => {
-            io.emit("newReview", data);
-        });
-        socket.on("updateReview", (data) => {
-            io.emit("updateReview", data);
-        });
-        socket.on("deleteReview", (data) => {
-            io.emit("deleteReview", data);
-        });
         /* User Login Events*/
         socket.on("userLogin", (data) => {
             io.emit("userLogin", data);
@@ -100,41 +89,6 @@ const initSocket = (server) => {
                 console.error(error);
             }
         }));
-        //event to emit hospitals messaged recently
-        socket.on("getRecentHospitals", (data) => __awaiter(void 0, void 0, void 0, function* () {
-            /* We want to emit the hosptitals that usERS messaged reccently */
-            const { userId } = data;
-            socket.join(userId);
-            const recentlyMessagedHospitals = yield models_1.Message.aggregate([
-                { $match: { receiver: userId } },
-                { $sort: { createdAt: -1 } },
-                { $group: { _id: "$roomId", message: { $first: "$$ROOT" } } },
-                { $replaceRoot: { newRoot: "$message" } },
-            ]);
-            const receiverIds = recentlyMessagedHospitals.map((message) => message.receiver);
-            const recentHospitals = yield models_2.Hospital.find({
-                _id: { $in: receiverIds },
-            });
-            io.to(userId).emit("recentHospitals", recentHospitals);
-        }));
-        //event to emit users messaged recently
-        socket.on("getRecentUsers", (data) => __awaiter(void 0, void 0, void 0, function* () {
-            /* We want to emit the hosptitals that usERS messaged reccently */
-            const { hospitalId } = data;
-            socket.join(hospitalId);
-            const recentlyMessagedUsers = yield models_1.Message.aggregate([
-                { $match: { receiver: hospitalId } },
-                { $sort: { createdAt: -1 } },
-                { $group: { _id: "$roomId", message: { $first: "$$ROOT" } } },
-                { $replaceRoot: { newRoot: "$message" } },
-            ]);
-            const receiverIds = recentlyMessagedUsers.map((message) => message.receiver);
-            const recentUsers = yield models_2.User.find({
-                _id: { $in: receiverIds },
-            });
-            io.to(hospitalId).emit("recentUsers", recentUsers);
-        }));
-        //event to emit reviews
         socket.on("sendMessage", (data) => __awaiter(void 0, void 0, void 0, function* () {
             /*
              I'm expecting the following properties
