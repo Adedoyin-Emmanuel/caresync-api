@@ -13,6 +13,7 @@ import {
   reviewRouter,
   userRouter,
   roomRouter,
+  medicalRecordRouter,
 } from "./routes";
 import { connectToDb } from "./utils";
 import http from "http";
@@ -33,7 +34,7 @@ const allowedOriginPatterns = [
 ];
 
 const corsOptions = {
-  origin: (origin:any, callback:any) => {
+  origin: (origin: any, callback: any) => {
     // Check if the origin matches any of the patterns
     if (
       !origin ||
@@ -62,6 +63,7 @@ app.use("/api/hospital", hospitalRouter);
 app.use("/api/appointment", appointmentRouter);
 app.use("/api/review", reviewRouter);
 app.use("/api/room", roomRouter);
+app.use("/api/medical-record", medicalRecordRouter);
 
 app.use(useNotFound);
 app.use(useErrorHandler);
