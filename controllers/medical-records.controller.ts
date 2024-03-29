@@ -46,7 +46,6 @@ class MedicalRecordController {
     if (error) return response(res, 400, error.details[0].message);
 
     const medicalRecord = await MedicalRecord.findById(value?.id);
-
     if (!medicalRecord)
       return response(res, 404, "Medical record with given if not found");
 
@@ -81,8 +80,10 @@ class MedicalRecordController {
     console.log(userId);
 
     const currentUserMedicalRecords = await MedicalRecord.find({
-      userId: userId,
-    });
+      userId,
+    })
+      .sort({ createdAt: -1 })
+      .exec();
 
     if (!userId) return response(res, 404, "User with given id not found");
 
