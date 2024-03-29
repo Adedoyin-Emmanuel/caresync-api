@@ -18,6 +18,7 @@ export interface IUser extends mongoose.Document {
   messages: mongoose.Types.ObjectId[];
   reviews: mongoose.Types.ObjectId[];
   healthCareHistory: mongoose.Types.ObjectId[];
+  medicalRecords: mongoose.Types.ObjectId[];
   allTotalAppointments?: number;
   location?: string;
   online?: boolean;
@@ -77,7 +78,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: false,
       max: 50,
-      default: ""
+      default: "",
     },
 
     allTotalAppointments: {
@@ -92,10 +93,10 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
-    online:{
+    online: {
       type: Boolean,
       required: false,
-      default: false
+      default: false,
     },
 
     verifyEmailTokenExpire: {
@@ -114,8 +115,8 @@ const UserSchema = new mongoose.Schema(
       type: Date,
       required: false,
       select: false,
-    }, 
-    
+    },
+
     appointments: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -130,6 +131,13 @@ const UserSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Messages",
+      },
+    ],
+
+    medicalRecords: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "MedicalRecords",
       },
     ],
     reviews: [
