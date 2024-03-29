@@ -9,14 +9,14 @@ class MedicalRecordController {
     const requestSchema = Joi.object({
       userId: Joi.string().required(),
       symptoms: Joi.string().required().max(2500),
-      diagonsis: Joi.string().max(25000).required(),
+      diagnosis: Joi.string().max(25000).required(),
     });
 
     const { error, value } = requestSchema.validate(req.body);
 
     if (error) return response(res, 400, error.details[0].message);
 
-    const user = await User.findOne(value?.userId);
+    const user = await User.findOne({ _id: value?.userId });
 
     if (!user) return response(res, 404, "User with given id does not exist");
 
@@ -78,7 +78,11 @@ class MedicalRecordController {
   ) {
     const userId = req.user._id;
 
-    const currentUserMedicalRecords = await MedicalRecord.find({ userId });
+    console.log(userId);
+
+    const currentUserMedicalRecords = await MedicalRecord.find({
+      userId: userId,
+    });
 
     if (!userId) return response(res, 404, "User with given id not found");
 
@@ -96,7 +100,7 @@ class MedicalRecordController {
   static async updateMedicalRecord(req: AuthRequest | any, res: Response) {
     const requestSchema = Joi.object({
       symptoms: Joi.string().required().max(2500),
-      diagonsis: Joi.string().max(25000).required(),
+      diagnosis: Joi.string().max(25000).required(),
     });
 
     const { error, value } = requestSchema.validate(req.body);

@@ -10,8 +10,8 @@ declare global {
   }
 }
 interface UseCheckRoleOptions {
-  req:  Request;
-  res:  Response;
+  req: Request;
+  res: Response;
   next: NextFunction;
   role: "user" | "hospital";
 }

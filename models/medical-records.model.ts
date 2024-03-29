@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export interface IMedicalRecord extends mongoose.Document {
   userId: mongoose.Types.ObjectId;
-  symptom: string;
+  symptoms: string;
   diagnosis: string;
 }
 
@@ -14,7 +14,7 @@ const MedicalRecordSchema = new mongoose.Schema(
       ref: "User",
     },
 
-    symptom: {
+    symptoms: {
       type: String,
       required: true,
       max: 2500,
