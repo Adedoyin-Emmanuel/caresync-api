@@ -2,11 +2,11 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
 import * as _ from "lodash";
-import { Review } from "../models";
-import Hospital from "../models/hospital.model";
+import { Hospital, User, Review } from "../models";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
 import { io } from "../sockets/socket.server";
+import { IHospital } from "../models/hospital.model";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -100,29 +100,29 @@ class HospitalController {
     return response(res, 200, "Hospital info fetched successfully", hospital);
   }
 
+  static async getOnlineHospitals(req: Request, res: Response) {
+    const onlineHosptials = await Hospital.find({ online: true });
 
-
-  static async getOnlineHospitals(req: Request, res: Response){
-    const onlineHosptials = await Hospital.find({online: true});
-
-    if(!onlineHosptials){
+    if (!onlineHosptials) {
       io.emit("onlineHospitals", []);
       return response(res, 404, "No hospital online", []);
     }
 
-
     io.emit("onlineHospitals", onlineHosptials);
-    return response(res, 200, "Online hospitals fetched successfully", onlineHosptials);
+    return response(
+      res,
+      200,
+      "Online hospitals fetched successfully",
+      onlineHosptials
+    );
   }
 
+  static async returnOnlineHospitals(req: Request, res: Response) {
+    const onlineHosptials = await Hospital.find({ online: true });
 
-  static async returnOnlineHospitals(req: Request, res: Response){
-    const onlineHosptials = await Hospital.find({online: true});
-
-    if(!onlineHosptials){
+    if (!onlineHosptials) {
       return [];
     }
-
 
     return onlineHosptials;
   }
@@ -150,7 +150,7 @@ class HospitalController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
-    const { id:hospitalId } = value;
+    const { id: hospitalId } = value;
     const reviews = await Review.find({ hospitalId });
 
     if (reviews.length == 0)
@@ -158,11 +158,50 @@ class HospitalController {
     const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
     const rating = totalRating / reviews.length;
 
+    return response(res, 200, "Average rating fetched successfully", rating);
+  }
+
+  static async getHospitalThatHaveAccessToUserMedicalRecords(
+    req: Request,
+    res: Response
+  ) {
+    const requestSchema = Joi.object({
+      userId: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { userId } = value;
+
+    const user = await User.findById(userId);
+
+    if (!user) return response(res, 404, "User with given id not found");
+
+    const allHospitalsThatHaveAccess = user.medicalRecordsAccess;
+
+    const filteredHospitals = [...new Set(allHospitalsThatHaveAccess)];
+
+    console.log(filteredHospitals);
+
+    // Fetch details for each hospital
+    const hospitalsWithDetails = await Promise.all(
+      filteredHospitals.map(async (hospitalId) => {
+        const hospital = await Hospital.findById(hospitalId);
+        return hospital;
+      })
+    );
+
+    const validHospitals = hospitalsWithDetails.filter(
+      (hospital) => hospital !== null
+    );
+
     return response(
       res,
       200,
-      "Average rating fetched successfully",
-      rating
+      "All hospitals fetched successfully",
+      validHospitals
     );
   }
 
@@ -172,7 +211,7 @@ class HospitalController {
       username: Joi.string().required().max(20),
       bio: Joi.string().required().max(500),
       email: Joi.string().required().email(),
-      location: Joi.string().required().max(50),
+      location: Joi.string().required().max(150),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =

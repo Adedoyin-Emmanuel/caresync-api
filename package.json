@@ -61,7 +61,7 @@
     "express-slow-down": "^1.6.0",
     "joi": "^17.10.2",
     "jsonwebtoken": "^9.0.2",
-    "livekit-server-sdk": "^1.2.7",
+    "livekit-server-sdk": "^2.1.2",
     "lodash": "^4.17.21",
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",

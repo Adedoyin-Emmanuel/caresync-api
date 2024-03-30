@@ -4,6 +4,7 @@ import HospitalController from "./hospital.controller";
 import AppointmentController from "./appointment.controller";
 import ReviewController from "./review.controller";
 import RoomController from "./room.controller";
+import MedicalRecordController from "./medical-records.controller";
 
 export  {
   AuthController,
@@ -11,5 +12,6 @@ export  {
   HospitalController,
   AppointmentController,
   ReviewController,
-  RoomController
+  RoomController,
+  MedicalRecordController
 };

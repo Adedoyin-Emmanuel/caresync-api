@@ -7,7 +7,6 @@ import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
 import { io } from "../sockets/socket.server";
 
-
 class UserController {
   static async createUser(req: Request, res: Response) {
     const validationSchema = Joi.object({
@@ -84,31 +83,29 @@ class UserController {
     return response(res, 200, "User info fetched successfully", user);
   }
 
-  static async getOnlineUsers(req: Request, res: Response){
-    const onlineUsers = await User.find({online: true});
+  static async getOnlineUsers(req: Request, res: Response) {
+    const onlineUsers = await User.find({ online: true });
 
-    if(!onlineUsers){
+    if (!onlineUsers) {
       io.emit("onlineUsers", []);
       return response(res, 404, "No user online", []);
     }
-
 
     io.emit("onlineUsers", onlineUsers);
     return response(res, 200, "Online users fetched successfully", onlineUsers);
   }
 
 
-  static async returnOnlineUsers(req: Request, res: Response){
-    const onlineUsers = await User.find({online: true});
 
-    if(!onlineUsers){
+  static async returnOnlineUsers(req: Request, res: Response) {
+    const onlineUsers = await User.find({ online: true });
+
+    if (!onlineUsers) {
       return [];
     }
 
-
     return onlineUsers;
   }
-
 
   static async searchUser(req: Request, res: Response) {
     const requestSchema = Joi.object({
@@ -126,8 +123,7 @@ class UserController {
       ],
     });
 
-    if (user.length == 0)
-      return response(res, 404, "No users found", []);
+    if (user.length == 0) return response(res, 404, "No users found", []);
 
     if (!user) return response(res, 400, "Couldn't get user");
 
@@ -140,7 +136,7 @@ class UserController {
       username: Joi.string().required().max(20),
       bio: Joi.string().required().max(500),
       email: Joi.string().required().email(),
-      location: Joi.string().required().max(50),
+      location: Joi.string().required().max(150),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =

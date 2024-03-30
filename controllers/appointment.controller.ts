@@ -23,6 +23,8 @@ class AppointmentController {
       userId: Joi.string().required(),
       startDate: Joi.date().iso().required(),
       endDate: Joi.date().iso().required(),
+
+      medicalRecordAccess: Joi.boolean().default(false),
     });
 
     const { error, value } = validationSchema.validate(req.body);
@@ -48,6 +50,8 @@ class AppointmentController {
         endDate: { $gt: value.startDate },
       });
 
+      console.log(existingAppointment);
+
       if (existingAppointment) {
         return response(
           res,
@@ -56,14 +60,32 @@ class AppointmentController {
         );
       }
 
-      const appointment: any = await Appointment.create(value);
+      const { medicalRecordAccess, ...modifiedData } = value;
+      const appointment: any = await Appointment.create(modifiedData);
 
       // Update User's Appointments
-      await User.findByIdAndUpdate(
-        value.userId,
-        { $push: { appointments: appointment._id } },
-        { new: true }
-      );
+      if (medicalRecordAccess) {
+        const hospitalExists = user.medicalRecordsAccess.includes(
+          value.hospitalId
+        );
+
+        // If the hospitalId is not already in the array, add it
+        if (!hospitalExists) {
+          await User.findByIdAndUpdate(
+            value.userId,
+            {
+              $push: {
+                appointments: appointment._id,
+                medicalRecordsAccess: value.hospitalId,
+              },
+            },
+            { new: true }
+          );
+        } else {
+          // If the hospitalId is already in the array, do nothing
+          console.log("Hospital already has access to user's medical records");
+        }
+      }
 
       // Update Hospital's Appointments
       await Hospital.findByIdAndUpdate(
@@ -119,7 +141,7 @@ class AppointmentController {
     return response(res, 200, "Appointment fetched successfully", appointment);
   }
 
-  static async getAppointmentByUserId(req: AuthRequest | any, res: Response) {
+  static async getAppointmentByUserId(req: Request, res: Response) {
     const requestSchema = Joi.object({
       id: Joi.string().required(),
     });
@@ -127,8 +149,8 @@ class AppointmentController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
-    const { id: userId } = value;
-    const appointments = await Appointment.find({ userId })
+    const { id } = value;
+    const appointments = await Appointment.find({ userId: id })
       .sort({ createdAt: -1 })
       .exec();
     if (!appointments) return response(res, 404, "No appointments found");
@@ -239,6 +261,7 @@ class AppointmentController {
       status: Joi.string().required(),
       startDate: Joi.date().iso(),
       endDate: Joi.date().iso(),
+      medicalRecordAccess: Joi.boolean().default(false),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =
@@ -283,11 +306,38 @@ class AppointmentController {
     }
 
     const options = { new: true, runValidators: true };
+    const { medicalRecordAccess, ...modifiedData } = requestBodyValue;
     const updatedAppointment = await Appointment.findByIdAndUpdate(
       id,
-      requestBodyValue,
+      modifiedData,
       options
     );
+
+    const user = await User.findById(updatedAppointment?.userId);
+
+    console.log(medicalRecordAccess);
+    // Update User's Appointments
+    if (medicalRecordAccess) {
+      const hospitalExists = user?.medicalRecordsAccess.includes(
+        updatedAppointment?.hospitalId as any
+      );
+
+      // If the hospitalId is not already in the array, add it
+      if (!hospitalExists) {
+        await User.findByIdAndUpdate(
+          updatedAppointment?.userId,
+          {
+            $push: {
+              medicalRecordsAccess: updatedAppointment?.hospitalId,
+            },
+          },
+          { new: true }
+        );
+      } else {
+        // If the hospitalId is already in the array, do nothing
+        console.log("Hospital already has access to user's medical records");
+      }
+    }
 
     //emit an updateAppointment event
     io.emit("updateAppointment", updatedAppointment);
@@ -318,7 +368,7 @@ class AppointmentController {
       return response(
         res,
         400,
-        "Cannot cancel an alrady approved appointment."
+        "Cannot cancel an already approved appointment."
       );
     appointment.status = "failed";
 
