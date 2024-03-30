@@ -50,6 +50,8 @@ class AppointmentController {
         endDate: { $gt: value.startDate },
       });
 
+      console.log(existingAppointment);
+
       if (existingAppointment) {
         return response(
           res,
@@ -139,7 +141,7 @@ class AppointmentController {
     return response(res, 200, "Appointment fetched successfully", appointment);
   }
 
-  static async getAppointmentByUserId(req: AuthRequest | any, res: Response) {
+  static async getAppointmentByUserId(req: Request, res: Response) {
     const requestSchema = Joi.object({
       id: Joi.string().required(),
     });
@@ -147,8 +149,8 @@ class AppointmentController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
-    const { id: userId } = value;
-    const appointments = await Appointment.find({ userId })
+    const { id } = value;
+    const appointments = await Appointment.find({ userId: id })
       .sort({ createdAt: -1 })
       .exec();
     if (!appointments) return response(res, 404, "No appointments found");
@@ -313,6 +315,7 @@ class AppointmentController {
 
     const user = await User.findById(updatedAppointment?.userId);
 
+    console.log(medicalRecordAccess);
     // Update User's Appointments
     if (medicalRecordAccess) {
       const hospitalExists = user?.medicalRecordsAccess.includes(
@@ -322,10 +325,10 @@ class AppointmentController {
       // If the hospitalId is not already in the array, add it
       if (!hospitalExists) {
         await User.findByIdAndUpdate(
-          requestBodyValue.userId,
+          updatedAppointment?.userId,
           {
             $push: {
-              medicalRecordsAccess: requestBodyValue.hospitalId,
+              medicalRecordsAccess: updatedAppointment?.hospitalId,
             },
           },
           { new: true }
@@ -365,7 +368,7 @@ class AppointmentController {
       return response(
         res,
         400,
-        "Cannot cancel an alrady approved appointment."
+        "Cannot cancel an already approved appointment."
       );
     appointment.status = "failed";
 

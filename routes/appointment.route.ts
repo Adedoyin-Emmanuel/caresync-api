@@ -10,7 +10,6 @@ appointmentRouter.post(
   [useAuth, useCheckRole("user")],
   AppointmentController.createAppointment
 );
-appointmentRouter.get("/", [useAuth], AppointmentController.getAllAppointments);
 appointmentRouter.get(
   "/latest/:id",
   [useAuth],
@@ -18,6 +17,7 @@ appointmentRouter.get(
 );
 appointmentRouter.get(
   "/user/:id",
+  [useAuth],
   AppointmentController.getAppointmentByUserId
 );
 
@@ -32,6 +32,9 @@ appointmentRouter.get(
   "/hospital/:id",
   AppointmentController.getAppointmentByHospitalId
 );
+
+appointmentRouter.get("/", [useAuth], AppointmentController.getAllAppointments);
+
 appointmentRouter.get(
   "/:id",
   [useAuth],
