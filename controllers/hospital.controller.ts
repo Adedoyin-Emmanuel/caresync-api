@@ -100,29 +100,29 @@ class HospitalController {
     return response(res, 200, "Hospital info fetched successfully", hospital);
   }
 
+  static async getOnlineHospitals(req: Request, res: Response) {
+    const onlineHosptials = await Hospital.find({ online: true });
 
-
-  static async getOnlineHospitals(req: Request, res: Response){
-    const onlineHosptials = await Hospital.find({online: true});
-
-    if(!onlineHosptials){
+    if (!onlineHosptials) {
       io.emit("onlineHospitals", []);
       return response(res, 404, "No hospital online", []);
     }
 
-
     io.emit("onlineHospitals", onlineHosptials);
-    return response(res, 200, "Online hospitals fetched successfully", onlineHosptials);
+    return response(
+      res,
+      200,
+      "Online hospitals fetched successfully",
+      onlineHosptials
+    );
   }
 
+  static async returnOnlineHospitals(req: Request, res: Response) {
+    const onlineHosptials = await Hospital.find({ online: true });
 
-  static async returnOnlineHospitals(req: Request, res: Response){
-    const onlineHosptials = await Hospital.find({online: true});
-
-    if(!onlineHosptials){
+    if (!onlineHosptials) {
       return [];
     }
-
 
     return onlineHosptials;
   }
@@ -150,7 +150,7 @@ class HospitalController {
     const { error, value } = requestSchema.validate(req.params);
     if (error) return response(res, 400, error.details[0].message);
 
-    const { id:hospitalId } = value;
+    const { id: hospitalId } = value;
     const reviews = await Review.find({ hospitalId });
 
     if (reviews.length == 0)
@@ -158,12 +158,7 @@ class HospitalController {
     const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
     const rating = totalRating / reviews.length;
 
-    return response(
-      res,
-      200,
-      "Average rating fetched successfully",
-      rating
-    );
+    return response(res, 200, "Average rating fetched successfully", rating);
   }
 
   static async updateHospital(req: Request, res: Response) {
@@ -172,7 +167,7 @@ class HospitalController {
       username: Joi.string().required().max(20),
       bio: Joi.string().required().max(500),
       email: Joi.string().required().email(),
-      location: Joi.string().required().max(50),
+      location: Joi.string().required().max(150),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =

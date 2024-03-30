@@ -78,7 +78,7 @@ const UserSchema = new mongoose.Schema(
     location: {
       type: String,
       required: false,
-      max: 50,
+      max: 150,
       default: "",
     },
 
