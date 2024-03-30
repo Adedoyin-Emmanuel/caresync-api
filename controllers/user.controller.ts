@@ -95,6 +95,8 @@ class UserController {
     return response(res, 200, "Online users fetched successfully", onlineUsers);
   }
 
+
+
   static async returnOnlineUsers(req: Request, res: Response) {
     const onlineUsers = await User.find({ online: true });
 

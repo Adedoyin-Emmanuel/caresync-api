@@ -2,8 +2,7 @@ import bcrypt from "bcryptjs";
 import { Request, Response } from "express";
 import Joi from "joi";
 import * as _ from "lodash";
-import { Review } from "../models";
-import Hospital from "../models/hospital.model";
+import { Hospital, User, Review } from "../models";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
 import { io } from "../sockets/socket.server";
@@ -159,6 +158,38 @@ class HospitalController {
     const rating = totalRating / reviews.length;
 
     return response(res, 200, "Average rating fetched successfully", rating);
+  }
+
+  static async getHospitalThatHaveAccessToUserMedicalRecords(
+    req: Request,
+    res: Response
+  ) {
+    const requestSchema = Joi.object({
+      userId: Joi.string(),
+    });
+
+    const { error, value } = requestSchema.validate(req.params);
+
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { userId } = value;
+
+    const user = await User.findById(userId);
+
+    if (!user) return response(res, 404, "User with given id not found");
+
+    const allHospitalsThatHaveAccess = user.medicalRecordsAccess;
+
+    console.log(allHospitalsThatHaveAccess);
+
+    const filteredDuplicate = _.uniq(allHospitalsThatHaveAccess);
+
+    return response(
+      res,
+      200,
+      "Hospitals fetched succcessfully",
+      filteredDuplicate
+    );
   }
 
   static async updateHospital(req: Request, res: Response) {

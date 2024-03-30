@@ -11,9 +11,14 @@ hospitalRouter.post(
 hospitalRouter.get("/me", [useAuth], HospitalController.getMe);
 hospitalRouter.get("/search", HospitalController.searchHospital);
 hospitalRouter.get("/online", HospitalController.getOnlineHospitals);
+hospitalRouter.get("/rating/:id", HospitalController.getHospitalAverageRating);
+hospitalRouter.get(
+  "/user-medical-record",
+  [useAuth, useCheckRole("user")],
+  HospitalController.getHospitalThatHaveAccessToUserMedicalRecords
+);
 hospitalRouter.get("/", [useAuth], HospitalController.getAllHospitals);
 hospitalRouter.get("/:id", [useAuth], HospitalController.getHospitalById);
-hospitalRouter.get("/rating/:id", HospitalController.getHospitalAverageRating);
 hospitalRouter.put(
   "/:id",
   [useAuth, useCheckRole("hospital")],
