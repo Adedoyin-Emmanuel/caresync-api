@@ -3,6 +3,7 @@ import Joi from "joi";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
 import { MedicalRecord, User } from "../models";
+import { IUser } from "../models/user.model";
 
 class MedicalRecordController {
   static async createMedicalRecord(req: Request, res: Response) {
@@ -37,6 +38,7 @@ class MedicalRecordController {
   }
 
   static async getMedicalRecordById(req: Request, res: Response) {
+    const hospitalId = req.query?.hospitalId;
     const requestSchema = Joi.object({
       id: Joi.string().required(),
     });
@@ -45,9 +47,30 @@ class MedicalRecordController {
 
     if (error) return response(res, 400, error.details[0].message);
 
+    if (!hospitalId) return response(res, 400, "Hospital id is required");
+
     const medicalRecord = await MedicalRecord.findById(value?.id);
+
     if (!medicalRecord)
       return response(res, 404, "Medical record with given if not found");
+
+    const user = await User.findById(medicalRecord?.userId);
+
+    if (!user) return response(res, 404, "User with given id not found");
+
+    const hasAccess = user.medicalRecordsAccess.some((access: any) => {
+      //console.log(`access id is ${access?._id} hospital id is ${hospitalId}`);
+
+      return access._id.toString() === hospitalId;
+    });
+
+    // check if the hospital has access to user medical record
+    if (!hasAccess)
+      return response(
+        res,
+        403,
+        "Hospital doesn't have access to view user medical record"
+      );
 
     return response(
       res,
@@ -58,7 +81,36 @@ class MedicalRecordController {
   }
 
   static async getAllMedicalRecords(req: Request, res: Response) {
-    const medicalRecords = await MedicalRecord.find();
+    const userId = req.query.userId as string | undefined;
+    const hospitalId = req.query.hospitalId as string | undefined;
+
+    if (!userId) return response(res, 400, "User id is required");
+    if (!hospitalId) return response(res, 400, "Hospital id is required");
+
+    const user = await User.findById(userId);
+
+    if (!user) return response(res, 404, "User with given id not found");
+
+    const hasAccess = user.medicalRecordsAccess.some((access: any) => {
+      //console.log(`access id is ${access?._id} hospital id is ${hospitalId}`);
+
+      return access._id.toString() === hospitalId;
+    });
+
+    // check if an hopsital has access to view the user medical record
+
+    console.log(hasAccess);
+    if (!hasAccess)
+      return response(
+        res,
+        403,
+        "Hospital doesn't have access to view user medical records"
+      );
+
+    const queryConditions = userId ? { userId: userId } : {};
+    const medicalRecords = await MedicalRecord.find(queryConditions)
+      .sort({ createdAt: -1 })
+      .exec();
 
     if (medicalRecords.length == 0)
       return response(res, 200, "Medical records retrived successfully", []);

@@ -23,6 +23,8 @@ class AppointmentController {
       userId: Joi.string().required(),
       startDate: Joi.date().iso().required(),
       endDate: Joi.date().iso().required(),
+
+      medicalRecordAccess: Joi.boolean().default(false),
     });
 
     const { error, value } = validationSchema.validate(req.body);
@@ -56,14 +58,22 @@ class AppointmentController {
         );
       }
 
-      const appointment: any = await Appointment.create(value);
+      const { medicalRecordAccess, ...modifiedData } = value;
+      const appointment: any = await Appointment.create(modifiedData);
 
       // Update User's Appointments
-      await User.findByIdAndUpdate(
-        value.userId,
-        { $push: { appointments: appointment._id } },
-        { new: true }
-      );
+      if (medicalRecordAccess) {
+        await User.findByIdAndUpdate(
+          value.userId,
+          {
+            $push: {
+              appointments: appointment._id,
+              medicalRecordsAccess: value.hospitalId,
+            },
+          },
+          { new: true }
+        );
+      }
 
       // Update Hospital's Appointments
       await Hospital.findByIdAndUpdate(
@@ -239,6 +249,7 @@ class AppointmentController {
       status: Joi.string().required(),
       startDate: Joi.date().iso(),
       endDate: Joi.date().iso(),
+      medicalRecordAccess: Joi.boolean().default(false),
     });
 
     const { error: requestBodyError, value: requestBodyValue } =
@@ -283,11 +294,25 @@ class AppointmentController {
     }
 
     const options = { new: true, runValidators: true };
+    const { medicalRecordAccess, ...modifiedData } = requestBodyValue;
     const updatedAppointment = await Appointment.findByIdAndUpdate(
       id,
-      requestBodyValue,
+      modifiedData,
       options
     );
+
+    // Update User's Appointments
+    if (medicalRecordAccess) {
+      await User.findByIdAndUpdate(
+        updatedAppointment?.userId,
+        {
+          $push: {
+            medicalRecordsAccess: updatedAppointment?.hospitalId,
+          },
+        },
+        { new: true }
+      );
+    }
 
     //emit an updateAppointment event
     io.emit("updateAppointment", updatedAppointment);
