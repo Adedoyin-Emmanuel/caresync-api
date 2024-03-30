@@ -34,6 +34,11 @@ medicalRecordRouter.put(
 );
 
 medicalRecordRouter.delete(
+  "/hospital-access",
+  MedicalRecordController.deleteMedicalRecordAccessByHospitalId
+);
+
+medicalRecordRouter.delete(
   "/:id",
   [useAuth, useCheckRole("user")],
   MedicalRecordController.deleteMedicalRecord

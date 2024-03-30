@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Joi from "joi";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
-import { MedicalRecord, User } from "../models";
+import { Hospital, MedicalRecord, User } from "../models";
 import { IUser } from "../models/user.model";
 
 class MedicalRecordController {
@@ -203,6 +203,40 @@ class MedicalRecordController {
       200,
       "Medical record deleted successfully",
       deletedMedicalRecord
+    );
+  }
+
+  static async deleteMedicalRecordAccessByHospitalId(
+    req: Request,
+    res: Response
+  ) {
+    const requestSchema = Joi.object({
+      hospitalId: Joi.string().required(),
+      userId: Joi.string().required(),
+    });
+
+    const { error, value } = requestSchema.validate(req.query);
+
+    if (error) return response(res, 400, error.details[0].message);
+
+    const { hospitalId, userId } = value;
+    const hospital = await Hospital.findById(hospitalId);
+
+    if (!hospital)
+      return response(res, 404, "Hospital with given id not found");
+
+    const user = await User.findById(userId);
+
+    if (!user) return response(res, 404, "User with given id not found");
+
+    await User.findByIdAndUpdate(userId, {
+      $pull: { medicalRecordsAccess: hospitalId },
+    });
+
+    return response(
+      res,
+      200,
+      `${hospital.clinicName} has been removed from your medical record access`
     );
   }
 }

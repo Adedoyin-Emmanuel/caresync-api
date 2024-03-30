@@ -6,6 +6,7 @@ import { Hospital, User, Review } from "../models";
 import { AuthRequest } from "../types/types";
 import { response } from "./../utils";
 import { io } from "../sockets/socket.server";
+import { IHospital } from "../models/hospital.model";
 
 class HospitalController {
   static async createHospital(req: Request, res: Response) {
@@ -165,7 +166,7 @@ class HospitalController {
     res: Response
   ) {
     const requestSchema = Joi.object({
-      userId: Joi.string(),
+      userId: Joi.string().required(),
     });
 
     const { error, value } = requestSchema.validate(req.params);
@@ -180,15 +181,27 @@ class HospitalController {
 
     const allHospitalsThatHaveAccess = user.medicalRecordsAccess;
 
-    console.log(allHospitalsThatHaveAccess);
+    const filteredHospitals = [...new Set(allHospitalsThatHaveAccess)];
 
-    const filteredDuplicate = _.uniq(allHospitalsThatHaveAccess);
+    console.log(filteredHospitals);
+
+    // Fetch details for each hospital
+    const hospitalsWithDetails = await Promise.all(
+      filteredHospitals.map(async (hospitalId) => {
+        const hospital = await Hospital.findById(hospitalId);
+        return hospital;
+      })
+    );
+
+    const validHospitals = hospitalsWithDetails.filter(
+      (hospital) => hospital !== null
+    );
 
     return response(
       res,
       200,
-      "Hospitals fetched succcessfully",
-      filteredDuplicate
+      "All hospitals fetched successfully",
+      validHospitals
     );
   }
 

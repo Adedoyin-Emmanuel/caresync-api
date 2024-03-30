@@ -63,16 +63,26 @@ class AppointmentController {
 
       // Update User's Appointments
       if (medicalRecordAccess) {
-        await User.findByIdAndUpdate(
-          value.userId,
-          {
-            $push: {
-              appointments: appointment._id,
-              medicalRecordsAccess: value.hospitalId,
-            },
-          },
-          { new: true }
+        const hospitalExists = user.medicalRecordsAccess.includes(
+          value.hospitalId
         );
+
+        // If the hospitalId is not already in the array, add it
+        if (!hospitalExists) {
+          await User.findByIdAndUpdate(
+            value.userId,
+            {
+              $push: {
+                appointments: appointment._id,
+                medicalRecordsAccess: value.hospitalId,
+              },
+            },
+            { new: true }
+          );
+        } else {
+          // If the hospitalId is already in the array, do nothing
+          console.log("Hospital already has access to user's medical records");
+        }
       }
 
       // Update Hospital's Appointments
@@ -301,17 +311,29 @@ class AppointmentController {
       options
     );
 
+    const user = await User.findById(updatedAppointment?.userId);
+
     // Update User's Appointments
     if (medicalRecordAccess) {
-      await User.findByIdAndUpdate(
-        updatedAppointment?.userId,
-        {
-          $push: {
-            medicalRecordsAccess: updatedAppointment?.hospitalId,
-          },
-        },
-        { new: true }
+      const hospitalExists = user?.medicalRecordsAccess.includes(
+        updatedAppointment?.hospitalId as any
       );
+
+      // If the hospitalId is not already in the array, add it
+      if (!hospitalExists) {
+        await User.findByIdAndUpdate(
+          requestBodyValue.userId,
+          {
+            $push: {
+              medicalRecordsAccess: requestBodyValue.hospitalId,
+            },
+          },
+          { new: true }
+        );
+      } else {
+        // If the hospitalId is already in the array, do nothing
+        console.log("Hospital already has access to user's medical records");
+      }
     }
 
     //emit an updateAppointment event
