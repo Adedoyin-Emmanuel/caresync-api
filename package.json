@@ -65,7 +65,7 @@
     "mongoose": "^8.1.1",
     "morgan": "^1.10.0",
     "nodemailer": "^6.9.6",
-    "openai": "^4.27.0",
+    "openai": "^4.28.0",
     "rimraf": "^5.0.5",
     "socket.io": "^4.7.2",
     "ts-node": "^10.9.1",
