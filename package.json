@@ -67,7 +67,7 @@
     "nodemailer": "^6.9.6",
     "openai": "^4.27.0",
     "rimraf": "^5.0.5",
-    "socket.io": "^4.7.2",
+    "socket.io": "^4.8.0",
     "ts-node": "^10.9.1",
     "uuid": "^9.0.1"
   }
